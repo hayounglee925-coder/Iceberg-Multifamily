@@ -164,7 +164,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
                     <th>Address</th>
                     <th>Type</th>
                     <th>Price</th>
-                    <th style="cursor:pointer" onclick="sortByPPU()">Price/Unit ▼</th>
+                    <th id="ppu-header" style="cursor:pointer" onclick="sortByPPU()">Price/Unit ▼</th>
                     <th>Beds</th>
                     <th>Baths</th>
                     <th>SqFt</th>
@@ -730,7 +730,7 @@ let currentSearch = '';
 
 function filterArea(area) {
     currentAreaFilter = area;
-    currentTypeFilter = '';
+    // Keep currentTypeFilter so faceted searches work smoothly
     updateButtonStates();
     applyFilters();
 }
@@ -800,13 +800,18 @@ function sortByPPU() {
         return ppuAsc ? aVal - bVal : bVal - aVal;
     });
     rows.forEach(row => tbody.appendChild(row));
-    const th = document.querySelector('th[onclick="sortByPPU()"]');
+    const th = document.getElementById('ppu-header');
     th.textContent = 'Price/Unit ' + (ppuAsc ? '▲' : '▼');
     ppuAsc = !ppuAsc;
 }
 
+// Prevent bubbling on View links to stop double-tab opening from tr clicks
+document.querySelectorAll('.listing-row a').forEach(a => {
+    a.addEventListener('click', (e) => e.stopPropagation());
+});
+
 // Default sort: Price/Unit ascending
-window.addEventListener('DOMContentLoaded', () => { sortByPPU(); });
+sortByPPU();
 </script>
 
 </body>

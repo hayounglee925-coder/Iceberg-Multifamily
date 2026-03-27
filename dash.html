@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iceberg Partners | Property Sourcing Dashboard</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+    --primary: #0B1D3A;
+    --accent: #2E86AB;
+    --bg: #F5F7FA;
+    --card: #FFFFFF;
+    --text: #1A1A2E;
+    --text-light: #6B7280;
+    --border: #E5E7EB;
+    --green: #10B981;
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); }
+
+.header { background: var(--primary); color: white; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; }
+.header h1 { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
+.header-sub { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+.header-right span { font-size: 12px; color: rgba(255,255,255,0.6); }
+
+.toolbar { background: white; border-bottom: 1px solid var(--border); padding: 12px 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.toolbar-left { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-btn { padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); background: white; cursor: pointer; transition: all 0.15s; }
+.filter-btn:hover, .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+.search-box { padding: 6px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; width: 220px; }
+.total-badge { background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+
+.container { max-width: 1400px; margin: 0 auto; padding: 24px 32px; }
+
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.stat-card { background: var(--card); border-radius: 10px; padding: 16px 20px; border: 1px solid var(--border); }
+.stat-area { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.stat-count { font-size: 28px; font-weight: 800; color: var(--text); }
+.stat-label { font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-detail { font-size: 12px; color: var(--text-light); margin-top: 8px; }
+.stat-range { font-size: 12px; color: var(--accent); font-weight: 600; margin-top: 4px; }
+
+.search-links { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.search-links-label { font-size: 12px; color: var(--text-light); font-weight: 600; }
+.search-link { display: inline-block; padding: 5px 12px; background: #EEF2FF; color: #4338CA; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.15s; }
+.search-link:hover { background: #4338CA; color: white; }
+
+.table-container { background: var(--card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
+table { width: 100%; border-collapse: collapse; }
+thead { background: #F9FAFB; }
+th { padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-light); border-bottom: 1px solid var(--border); }
+td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
+.listing-row { cursor: pointer; transition: background 0.1s; }
+.listing-row:hover { background: #F0F7FF; }
+.td-address { min-width: 200px; }
+.address-main { font-weight: 600; color: var(--text); }
+.address-sub { font-size: 11px; color: var(--text-light); margin-top: 2px; }
+.td-price { font-weight: 700; color: var(--text); white-space: nowrap; }
+.td-center { text-align: center; }
+.type-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #F3F4F6; color: #374151; }
+.pref-tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-left: 4px; }
+.view-btn { color: var(--accent); text-decoration: none; font-weight: 600; font-size: 12px; }
+.view-btn:hover { text-decoration: underline; }
+
+.footer { text-align: center; padding: 20px; font-size: 11px; color: var(--text-light); }
+
+.legend { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; }
+.legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-light); }
+.legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+@media (max-width: 900px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .container { padding: 16px; }
+    table { font-size: 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <h1>ICEBERG PARTNERS LLC</h1>
+        <div class="header-sub">Multifamily Acquisition Sourcing Dashboard — Verified Links Only</div>
+    </div>
+    <div class="header-right">
+        <span class="live-dot"></span>
+        <span>Last updated: March 27, 2026</span>
+    </div>
+</div>
+
+<div class="toolbar">
+    <div class="toolbar-left">
+        <button class="filter-btn active" onclick="filterArea('all')">All</button>
+        <button class="filter-btn" onclick="filterArea('Brooklyn')">Brooklyn</button>
+        <button class="filter-btn" onclick="filterArea('Long Island City')">LIC</button>
+        <button class="filter-btn" onclick="filterArea('Astoria')">Astoria</button>
+        <button class="filter-btn" onclick="filterArea('Manhattan')">Manhattan</button>
+        <span style="color:#D1D5DB">|</span>
+        <button class="filter-btn" onclick="filterType('Three')">3-Family</button>
+        <button class="filter-btn" onclick="filterType('Four')">4-Family</button>
+        <button class="filter-btn" onclick="filterType('preferred')">3-4 Fam Only</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+        <input type="text" class="search-box" placeholder="Search address..." oninput="searchFilter(this.value)">
+        <span class="total-badge" id="count-badge">41 listings</span>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="stats-grid">
+        <div class="stat-card" style="border-top: 3px solid #0891B2">
+            <div class="stat-area" style="color:#0891B2">Astoria</div>
+            <div class="stat-count">12</div>
+            <div class="stat-label">listings</div>
+            <div class="stat-detail">2 are 3-4 Family</div>
+            <div class="stat-range">$1,049,000 – $3,550,000</div>
+        </div>
+        <div class="stat-card" style="border-top: 3px solid #2563EB">
+            <div class="stat-area" style="color:#2563EB">Brooklyn</div>
+            <div class="stat-count">13</div>
+            <div class="stat-label">listings</div>
+            <div class="stat-detail">6 are 3-4 Family</div>
+            <div class="stat-range">$1,100,000 – $4,950,000</div>
+        </div>
+        <div class="stat-card" style="border-top: 3px solid #7C3AED">
+            <div class="stat-area" style="color:#7C3AED">Long Island City</div>
+            <div class="stat-count">4</div>
+            <div class="stat-label">listings</div>
+            <div class="stat-detail">0 are 3-4 Family</div>
+            <div class="stat-range">$1,850,000 – $3,980,000</div>
+        </div>
+        <div class="stat-card" style="border-top: 3px solid #DC2626">
+            <div class="stat-area" style="color:#DC2626">Manhattan</div>
+            <div class="stat-count">12</div>
+            <div class="stat-label">listings</div>
+            <div class="stat-detail">7 are 3-4 Family</div>
+            <div class="stat-range">$2,175,000 – $7,995,000</div>
+        </div>
+    </div>
+
+    <div class="search-links">
+        <span class="search-links-label">View all on StreetEasy:</span>
+        <a href="https://streeteasy.com/for-sale/brooklyn/type:M%7Cprice:1000000-10000000" target="_blank" rel="noopener" class="search-link">Brooklyn</a>
+        <a href="https://streeteasy.com/for-sale/long-island-city/type:M%7Cprice:1000000-10000000" target="_blank" rel="noopener" class="search-link">Long Island City</a>
+        <a href="https://streeteasy.com/for-sale/astoria/type:M%7Cprice:1000000-10000000" target="_blank" rel="noopener" class="search-link">Astoria</a>
+        <a href="https://streeteasy.com/for-sale/manhattan/type:M%7Cprice:1000000-10000000" target="_blank" rel="noopener" class="search-link">Manhattan</a>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#D1FAE5"></div> Preferred (3-4 Family)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#EEF2FF"></div> Multi (5+ Family)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#F3F4F6"></div> Review (2 Family)</div>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Address</th>
+                    <th>Type</th>
+                    <th>Price</th>
+                    <th>Beds</th>
+                    <th>Baths</th>
+                    <th>SqFt</th>
+                    <th>Link</th>
+                </tr>
+            </thead>
+            <tbody id="listings-body">
+
+<!-- ASTORIA (12) -->
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1812229', '_blank')">
+    <td class="td-address">
+        <div class="address-main">25-04 42nd Street</div>
+        <div class="address-sub">Astoria, Queens</div>
+    </td>
+    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
+    <td class="td-price">$2,200,000</td>
+    <td class="td-center">6</td>
+    <td class="td-center">4</td>
+    <td class="td-center">3,200 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1812229" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/31_65-23-street-astoria/twnhse', '_blank')">
+    <td class="td-address">
+        <div class="address-main">31-65 23rd Street</div>
+        <div class="address-sub">Astoria, Queens</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$2,399,888</td>
+    <td class="td-center">7</td>
+    <td class="td-center">5</td>
+    <td class="td-center">2,851 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/31_65-23-street-astoria/twnhse" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/14_24-astoria-boulevard-astoria/package', '_blank')">
+    <td class="td-address">
+        <div class="address-main">14-24 Astoria Boulevard</div>
+        <div class="address-sub">Astoria, Queens</div>
+    </td>
+    <td><span class="type-badge">Four-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
+    <td class="td-price">$2,995,000</td>
+    <td class="td-center">22</td>
+    <td class="td-center">6+</td>
+    <td class="td-center">6,954 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/14_24-astoria-boulevard-astoria/package" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/20_38-29-street-astoria/2fam', '_blank')">
+    <td class="td-address">
+        <div class="address-main">20-38 29th Street</div>
+        <div class="address-sub">Ditmars-Steinway, Astoria</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$1,300,000</td>
+    <td class="td-center">3</td>
+    <td class="td-center">3</td>
+    <td class="td-center">1,600 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/20_38-29-street-astoria/2fam" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1816567', '_blank')">
+    <td class="td-address">
+        <div class="address-main">31-73 41st Street</div>
+        <div class="address-sub">Astoria, Queens</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$1,889,000</td>
+    <td class="td-center">5</td>
+    <td class="td-center">4</td>
+    <td class="td-center">2,986 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1816567" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/25_37-48-street-astoria/2family', '_blank')">
+    <td class="td-address">
+        <div class="address-main">25-37 48th Street</div>
+        <div class="address-sub">Astoria, Queens</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$1,049,000</td>
+    <td class="td-center">3</td>
+    <td class="td-center">2</td>
+    <td class="td-center">—</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/25_37-48-street-astoria/2family" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/30_71-32-street-astoria/2-fam', '_blank')">
+    <td class="td-address">
+        <div class="address-main">30-71 32nd Street</div>
+        <div class="address-sub">Astoria, Queens</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$1,600,000</td>
+    <td class="td-center">5</td>
+    <td class="td-center">3</td>
+    <td class="td-center">—</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/30_71-32-street-astoria/2-fam" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1816287', '_blank')">
+    <td class="td-address">
+        <div class="address-main">25-49 42nd Street</div>
+        <div class="address-sub">Astoria, Queens</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$1,765,000</td>
+    <td class="td-center">8</td>
+    <td class="td-center">5</td>
+    <td class="td-center">2,070 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1816287" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1816140', '_blank')">
+    <td class="td-address">
+        <div class="address-main">31-51 35th Street</div>
+        <div class="address-sub">Astoria, Queens</div>
+    </td>
+    <td><span class="type-badge">Multifamily</span> <span class="pref-tag" style="background:#EEF2FF;color:#4338CA">Multi</span></td>
+    <td class="td-price">$1,550,000</td>
+    <td class="td-center">12</td>
+    <td class="td-center">6</td>
+    <td class="td-center">—</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1816140" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1815649', '_blank')">
+    <td class="td-address">
+        <div class="address-main">30-74 30th Street</div>
+        <div class="address-sub">Astoria, Queens</div>
+    </td>
+    <td><span class="type-badge">Multifamily</span> <span class="pref-tag" style="background:#EEF2FF;color:#4338CA">Multi</span></td>
+    <td class="td-price">$3,550,000</td>
+    <td class="td-center">16</td>
+    <td class="td-center">12</td>
+    <td class="td-center">6,637 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1815649" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1815956', '_blank')">
+    <td class="td-address">
+        <div class="address-main">23-64 35th Street</div>
+        <div class="address-sub">Ditmars-Steinway, Astoria</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$1,550,000</td>
+    <td class="td-center">3</td>
+    <td class="td-center">2.5</td>
+    <td class="td-center">1,768 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1815956" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/20_23-41-street-astoria/house', '_blank')">
+    <td class="td-address">
+        <div class="address-main">20-23 41st Street</div>
+        <div class="address-sub">Ditmars-Steinway, Astoria</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$1,450,000</td>
+    <td class="td-center">4</td>
+    <td class="td-center">3</td>
+    <td class="td-center">1,500 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/20_23-41-street-astoria/house" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+
+<!-- BROOKLYN (13) -->
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1814061', '_blank')">
+    <td class="td-address">
+        <div class="address-main">914 Pacific Street</div>
+        <div class="address-sub">Crown Heights, Brooklyn</div>
+    </td>
+    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
+    <td class="td-price">$4,950,000</td>
+    <td class="td-center">8</td>
+    <td class="td-center">8.5</td>
+    <td class="td-center">6,180 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1814061" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/234-richardson-street-brooklyn/1', '_blank')">
+    <td class="td-address">
+        <div class="address-main">234 Richardson Street #1</div>
+        <div class="address-sub">Williamsburg, Brooklyn</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$2,100,000</td>
+    <td class="td-center">5</td>
+    <td class="td-center">3</td>
+    <td class="td-center">1,280 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/234-richardson-street-brooklyn/1" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1818458', '_blank')">
+    <td class="td-address">
+        <div class="address-main">75 Beadel Street</div>
+        <div class="address-sub">East Williamsburg, Brooklyn</div>
+    </td>
+    <td><span class="type-badge">Four-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
+    <td class="td-price">$2,300,000</td>
+    <td class="td-center">7</td>
+    <td class="td-center">4</td>
+    <td class="td-center">3,300 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1818458" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1818527', '_blank')">
+    <td class="td-address">
+        <div class="address-main">1998 Bergen Street</div>
+        <div class="address-sub">Crown Heights, Brooklyn</div>
+    </td>
+    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
+    <td class="td-price">$1,299,000</td>
+    <td class="td-center">6</td>
+    <td class="td-center">3</td>
+    <td class="td-center">2,604 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1818527" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1818513', '_blank')">
+    <td class="td-address">
+        <div class="address-main">584 Sterling Place</div>
+        <div class="address-sub">Crown Heights, Brooklyn</div>
+    </td>
+    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
+    <td class="td-price">$3,500,000</td>
+    <td class="td-center">6</td>
+    <td class="td-center">3.5</td>
+    <td class="td-center">—</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1818513" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/429-clinton-street-brooklyn/1', '_blank')">
+    <td class="td-address">
+        <div class="address-main">429 Clinton Street #1</div>
+        <div class="address-sub">Carroll Gardens, Brooklyn</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$3,100,000</td>
+    <td class="td-center">3</td>
+    <td class="td-center">2.5</td>
+    <td class="td-center">1,900 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/429-clinton-street-brooklyn/1" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1818409', '_blank')">
+    <td class="td-address">
+        <div class="address-main">556 Hart Street</div>
+        <div class="address-sub">Bushwick, Brooklyn</div>
+    </td>
+    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
+    <td class="td-price">$2,000,000</td>
+    <td class="td-center">9</td>
+    <td class="td-center">6</td>
+    <td class="td-center">3,100 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1818409" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1818429', '_blank')">
+    <td class="td-address">
+        <div class="address-main">1828 Rockaway Parkway</div>
+        <div class="address-sub">Canarsie, Brooklyn</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$1,100,000</td>
+    <td class="td-center">6</td>
+    <td class="td-center">3.5</td>
+    <td class="td-center">2,900 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1818429" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1818413', '_blank')">
+    <td class="td-address">
+        <div class="address-main">2543 Bedford Avenue</div>
+        <div class="address-sub">Flatbush, Brooklyn</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$1,350,000</td>
+    <td class="td-center">9</td>
+    <td class="td-center">6</td>
+    <td class="td-center">3,600 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1818413" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/323-carroll-street-brooklyn/twofamily', '_blank')">
+    <td class="td-address">
+        <div class="address-main">323 Carroll Street</div>
+        <div class="address-sub">Carroll Gardens, Brooklyn</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$2,200,000</td>
+    <td class="td-center">2</td>
+    <td class="td-center">2</td>
+    <td class="td-center">1,147 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/323-carroll-street-brooklyn/twofamily" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1818366', '_blank')">
+    <td class="td-address">
+        <div class="address-main">355 85th Street</div>
+        <div class="address-sub">Bay Ridge, Brooklyn</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$1,880,000</td>
+    <td class="td-center">2</td>
+    <td class="td-center">2</td>
+    <td class="td-center">2,500 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1818366" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/568-74-street-brooklyn/1', '_blank')">
+    <td class="td-address">
+        <div class="address-main">568 74th Street #1</div>
+        <div class="address-sub">Bay Ridge, Brooklyn</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$1,495,000</td>
+    <td class="td-center">5</td>
+    <td class="td-center">3</td>
+    <td class="td-center">—</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/568-74-street-brooklyn/1" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/1213-demond-court-brooklyn/house', '_blank')">
+    <td class="td-address">
+        <div class="address-main">1213 Demond Court</div>
+        <div class="address-sub">Sheepshead Bay, Brooklyn</div>
+    </td>
+    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
+    <td class="td-price">$1,928,000</td>
+    <td class="td-center">9</td>
+    <td class="td-center">4+</td>
+    <td class="td-center">4,432 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/1213-demond-court-brooklyn/house" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+
+<!-- LONG ISLAND CITY (4) -->
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1813270', '_blank')">
+    <td class="td-address">
+        <div class="address-main">34-09 37th Avenue</div>
+        <div class="address-sub">Long Island City, Queens</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$1,850,000</td>
+    <td class="td-center">3</td>
+    <td class="td-center">2</td>
+    <td class="td-center">—</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1813270" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1810778', '_blank')">
+    <td class="td-address">
+        <div class="address-main">44-66 23rd Street</div>
+        <div class="address-sub">Hunters Point, Long Island City</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$2,075,000</td>
+    <td class="td-center">4</td>
+    <td class="td-center">2</td>
+    <td class="td-center">2,000 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1810778" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/21_18-45-avenue-long_island_city/1and-2', '_blank')">
+    <td class="td-address">
+        <div class="address-main">21-18 45th Avenue</div>
+        <div class="address-sub">Hunters Point, Long Island City</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$3,980,000</td>
+    <td class="td-center">6</td>
+    <td class="td-center">4+</td>
+    <td class="td-center">—</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/21_18-45-avenue-long_island_city/1and-2" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1784097', '_blank')">
+    <td class="td-address">
+        <div class="address-main">36-26 11th Street</div>
+        <div class="address-sub">Long Island City, Queens</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$2,499,000</td>
+    <td class="td-center">5</td>
+    <td class="td-center">3</td>
+    <td class="td-center">4,250 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1784097" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+
+<!-- MANHATTAN (12) -->
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1817565', '_blank')">
+    <td class="td-address">
+        <div class="address-main">2044 Madison Avenue</div>
+        <div class="address-sub">Central Harlem, Manhattan</div>
+    </td>
+    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
+    <td class="td-price">$2,175,000</td>
+    <td class="td-center">5</td>
+    <td class="td-center">4</td>
+    <td class="td-center">3,268 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1817565" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/the-harlem-belle/1', '_blank')">
+    <td class="td-address">
+        <div class="address-main">304 West 137th Street #1</div>
+        <div class="address-sub">Central Harlem, Manhattan</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$2,995,000</td>
+    <td class="td-center">5</td>
+    <td class="td-center">4.5</td>
+    <td class="td-center">4,250 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/the-harlem-belle/1" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/151-east-29-street-new_york/na', '_blank')">
+    <td class="td-address">
+        <div class="address-main">151 East 29th Street</div>
+        <div class="address-sub">Kips Bay, Manhattan</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$3,750,000</td>
+    <td class="td-center">5</td>
+    <td class="td-center">4</td>
+    <td class="td-center">2,622 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/151-east-29-street-new_york/na" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1816914', '_blank')">
+    <td class="td-address">
+        <div class="address-main">322 West 80th Street</div>
+        <div class="address-sub">Upper West Side, Manhattan</div>
+    </td>
+    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
+    <td class="td-price">$7,995,000</td>
+    <td class="td-center">11</td>
+    <td class="td-center">9.5</td>
+    <td class="td-center">8,380 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1816914" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1816595', '_blank')">
+    <td class="td-address">
+        <div class="address-main">2099 5th Avenue</div>
+        <div class="address-sub">Central Harlem, Manhattan</div>
+    </td>
+    <td><span class="type-badge">Four-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
+    <td class="td-price">$3,950,000</td>
+    <td class="td-center">9</td>
+    <td class="td-center">6</td>
+    <td class="td-center">5,939 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1816595" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1815753', '_blank')">
+    <td class="td-address">
+        <div class="address-main">246 West 132nd Street</div>
+        <div class="address-sub">Central Harlem, Manhattan</div>
+    </td>
+    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
+    <td class="td-price">$2,595,000</td>
+    <td class="td-center">5</td>
+    <td class="td-center">4+</td>
+    <td class="td-center">4,860 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1815753" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/312-west-103-street-new_york/na', '_blank')">
+    <td class="td-address">
+        <div class="address-main">312 West 103rd Street</div>
+        <div class="address-sub">Upper West Side, Manhattan</div>
+    </td>
+    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
+    <td class="td-price">$3,150,000</td>
+    <td class="td-center">6</td>
+    <td class="td-center">4+</td>
+    <td class="td-center">4,506 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/312-west-103-street-new_york/na" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/2070-5-avenue-new_york/1', '_blank')">
+    <td class="td-address">
+        <div class="address-main">2070 Fifth Avenue #1</div>
+        <div class="address-sub">Central Harlem, Manhattan</div>
+    </td>
+    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
+    <td class="td-price">$2,400,000</td>
+    <td class="td-center">10</td>
+    <td class="td-center">8.5</td>
+    <td class="td-center">5,200 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/2070-5-avenue-new_york/1" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1814605', '_blank')">
+    <td class="td-address">
+        <div class="address-main">115 West 87th Street</div>
+        <div class="address-sub">Upper West Side, Manhattan</div>
+    </td>
+    <td><span class="type-badge">Four-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
+    <td class="td-price">$4,750,000</td>
+    <td class="td-center">8</td>
+    <td class="td-center">6.5</td>
+    <td class="td-center">4,725 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/sale/1814605" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/27-west-9-street-new_york/twnhs', '_blank')">
+    <td class="td-address">
+        <div class="address-main">27 West 9th Street</div>
+        <div class="address-sub">Greenwich Village, Manhattan</div>
+    </td>
+    <td><span class="type-badge">Multifamily</span> <span class="pref-tag" style="background:#EEF2FF;color:#4338CA">Multi</span></td>
+    <td class="td-price">$6,395,000</td>
+    <td class="td-center">6</td>
+    <td class="td-center">6</td>
+    <td class="td-center">5,610 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/27-west-9-street-new_york/twnhs" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/245-east-61-street-new_york/th', '_blank')">
+    <td class="td-address">
+        <div class="address-main">245 East 61st Street</div>
+        <div class="address-sub">Lenox Hill, Manhattan</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$4,300,000</td>
+    <td class="td-center">4</td>
+    <td class="td-center">3.5</td>
+    <td class="td-center">4,304 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/245-east-61-street-new_york/th" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/127-west-122-street-new_york/th', '_blank')">
+    <td class="td-address">
+        <div class="address-main">127 West 122nd Street</div>
+        <div class="address-sub">South Harlem, Manhattan</div>
+    </td>
+    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
+    <td class="td-price">$3,500,000</td>
+    <td class="td-center">6</td>
+    <td class="td-center">3</td>
+    <td class="td-center">4,504 ft²</td>
+    <td class="td-center"><a href="https://streeteasy.com/building/127-west-122-street-new_york/th" target="_blank" rel="noopener" class="view-btn">View →</a></td>
+</tr>
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="footer">
+    Iceberg Partners LLC · Multifamily Acquisition Sourcing · Source: StreetEasy (Verified Links) · Data as of March 27, 2026 · Confidential
+</div>
+
+<script>
+let currentAreaFilter = 'all';
+let currentTypeFilter = '';
+let currentSearch = '';
+
+function filterArea(area) {
+    currentAreaFilter = area;
+    currentTypeFilter = '';
+    updateButtonStates();
+    applyFilters();
+}
+
+function filterType(type) {
+    if (currentTypeFilter === type) {
+        currentTypeFilter = '';
+    } else {
+        currentTypeFilter = type;
+    }
+    updateButtonStates();
+    applyFilters();
+}
+
+function searchFilter(val) {
+    currentSearch = val.toLowerCase();
+    applyFilters();
+}
+
+function updateButtonStates() {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.remove('active');
+        const clickAction = btn.getAttribute('onclick');
+        if (clickAction) {
+            if (clickAction.includes("filterArea('" + currentAreaFilter + "')")) {
+                btn.classList.add('active');
+            }
+            if (currentTypeFilter && clickAction.includes("filterType('" + currentTypeFilter + "')")) {
+                btn.classList.add('active');
+            }
+        }
+    });
+}
+
+function applyFilters() {
+    const rows = document.querySelectorAll('.listing-row');
+    let visible = 0;
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const area = row.querySelector('.address-sub').textContent;
+        const type = row.querySelector('.type-badge').textContent.toLowerCase();
+
+        let show = true;
+        if (currentAreaFilter !== 'all' && !area.includes(currentAreaFilter)) show = false;
+        if (currentTypeFilter === 'preferred') {
+            if (!type.includes('three') && !type.includes('four')) show = false;
+        } else if (currentTypeFilter === 'Three') {
+            if (!type.includes('three')) show = false;
+        } else if (currentTypeFilter === 'Four') {
+            if (!type.includes('four')) show = false;
+        }
+        if (currentSearch && !text.includes(currentSearch)) show = false;
+
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+    });
+    document.getElementById('count-badge').textContent = visible + (visible === 1 ? ' listing' : ' listings');
+}
+
+// Prevent double tab opening when clicking the View link inside the clickable row
+document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', e => e.stopPropagation());
+});
+</script>
+
+</body>
+</html>

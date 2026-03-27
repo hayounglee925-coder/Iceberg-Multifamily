@@ -59,6 +59,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
 .address-main { font-weight: 600; color: var(--text); }
 .address-sub { font-size: 11px; color: var(--text-light); margin-top: 2px; }
 .td-price { font-weight: 700; color: var(--text); white-space: nowrap; }
+.td-ppu { color: var(--accent); font-weight: 600; font-size: 12px; }
 .td-center { text-align: center; }
 .type-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #F3F4F6; color: #374151; }
 .pref-tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-left: 4px; }
@@ -163,6 +164,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
                     <th>Address</th>
                     <th>Type</th>
                     <th>Price</th>
+                    <th style="cursor:pointer" onclick="sortByPPU()">Price/Unit ▼</th>
                     <th>Beds</th>
                     <th>Baths</th>
                     <th>SqFt</th>
@@ -179,6 +181,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
     <td class="td-price">$2,200,000</td>
+    <td class="td-price td-ppu">$733,333</td>
     <td class="td-center">6</td>
     <td class="td-center">4</td>
     <td class="td-center">3,200 ft²</td>
@@ -191,6 +194,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$2,399,888</td>
+    <td class="td-price td-ppu">$1,199,944</td>
     <td class="td-center">7</td>
     <td class="td-center">5</td>
     <td class="td-center">2,851 ft²</td>
@@ -203,6 +207,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Four-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
     <td class="td-price">$2,995,000</td>
+    <td class="td-price td-ppu">$748,750</td>
     <td class="td-center">22</td>
     <td class="td-center">6+</td>
     <td class="td-center">6,954 ft²</td>
@@ -215,6 +220,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$1,300,000</td>
+    <td class="td-price td-ppu">$650,000</td>
     <td class="td-center">3</td>
     <td class="td-center">3</td>
     <td class="td-center">1,600 ft²</td>
@@ -227,6 +233,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$1,889,000</td>
+    <td class="td-price td-ppu">$944,500</td>
     <td class="td-center">5</td>
     <td class="td-center">4</td>
     <td class="td-center">2,986 ft²</td>
@@ -239,6 +246,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$1,049,000</td>
+    <td class="td-price td-ppu">$524,500</td>
     <td class="td-center">3</td>
     <td class="td-center">2</td>
     <td class="td-center">—</td>
@@ -251,6 +259,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$1,600,000</td>
+    <td class="td-price td-ppu">$800,000</td>
     <td class="td-center">5</td>
     <td class="td-center">3</td>
     <td class="td-center">—</td>
@@ -263,6 +272,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$1,765,000</td>
+    <td class="td-price td-ppu">$882,500</td>
     <td class="td-center">8</td>
     <td class="td-center">5</td>
     <td class="td-center">2,070 ft²</td>
@@ -275,6 +285,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Multifamily</span> <span class="pref-tag" style="background:#EEF2FF;color:#4338CA">Multi</span></td>
     <td class="td-price">$1,550,000</td>
+    <td class="td-price td-ppu">$258,333</td>
     <td class="td-center">12</td>
     <td class="td-center">6</td>
     <td class="td-center">—</td>
@@ -287,6 +298,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Multifamily</span> <span class="pref-tag" style="background:#EEF2FF;color:#4338CA">Multi</span></td>
     <td class="td-price">$3,550,000</td>
+    <td class="td-price td-ppu">$295,833</td>
     <td class="td-center">16</td>
     <td class="td-center">12</td>
     <td class="td-center">6,637 ft²</td>
@@ -299,6 +311,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$1,550,000</td>
+    <td class="td-price td-ppu">$775,000</td>
     <td class="td-center">3</td>
     <td class="td-center">2.5</td>
     <td class="td-center">1,768 ft²</td>
@@ -311,6 +324,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$1,450,000</td>
+    <td class="td-price td-ppu">$725,000</td>
     <td class="td-center">4</td>
     <td class="td-center">3</td>
     <td class="td-center">1,500 ft²</td>
@@ -325,6 +339,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
     <td class="td-price">$4,950,000</td>
+    <td class="td-price td-ppu">$1,650,000</td>
     <td class="td-center">8</td>
     <td class="td-center">8.5</td>
     <td class="td-center">6,180 ft²</td>
@@ -337,6 +352,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$2,100,000</td>
+    <td class="td-price td-ppu">$1,050,000</td>
     <td class="td-center">5</td>
     <td class="td-center">3</td>
     <td class="td-center">1,280 ft²</td>
@@ -349,6 +365,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Four-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
     <td class="td-price">$2,300,000</td>
+    <td class="td-price td-ppu">$575,000</td>
     <td class="td-center">7</td>
     <td class="td-center">4</td>
     <td class="td-center">3,300 ft²</td>
@@ -361,6 +378,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
     <td class="td-price">$1,299,000</td>
+    <td class="td-price td-ppu">$433,000</td>
     <td class="td-center">6</td>
     <td class="td-center">3</td>
     <td class="td-center">2,604 ft²</td>
@@ -373,6 +391,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
     <td class="td-price">$3,500,000</td>
+    <td class="td-price td-ppu">$1,166,666</td>
     <td class="td-center">6</td>
     <td class="td-center">3.5</td>
     <td class="td-center">—</td>
@@ -385,6 +404,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$3,100,000</td>
+    <td class="td-price td-ppu">$1,550,000</td>
     <td class="td-center">3</td>
     <td class="td-center">2.5</td>
     <td class="td-center">1,900 ft²</td>
@@ -397,6 +417,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
     <td class="td-price">$2,000,000</td>
+    <td class="td-price td-ppu">$666,666</td>
     <td class="td-center">9</td>
     <td class="td-center">6</td>
     <td class="td-center">3,100 ft²</td>
@@ -409,6 +430,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$1,100,000</td>
+    <td class="td-price td-ppu">$550,000</td>
     <td class="td-center">6</td>
     <td class="td-center">3.5</td>
     <td class="td-center">2,900 ft²</td>
@@ -421,6 +443,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$1,350,000</td>
+    <td class="td-price td-ppu">$675,000</td>
     <td class="td-center">9</td>
     <td class="td-center">6</td>
     <td class="td-center">3,600 ft²</td>
@@ -433,6 +456,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$2,200,000</td>
+    <td class="td-price td-ppu">$1,100,000</td>
     <td class="td-center">2</td>
     <td class="td-center">2</td>
     <td class="td-center">1,147 ft²</td>
@@ -445,6 +469,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$1,880,000</td>
+    <td class="td-price td-ppu">$940,000</td>
     <td class="td-center">2</td>
     <td class="td-center">2</td>
     <td class="td-center">2,500 ft²</td>
@@ -457,6 +482,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$1,495,000</td>
+    <td class="td-price td-ppu">$747,500</td>
     <td class="td-center">5</td>
     <td class="td-center">3</td>
     <td class="td-center">—</td>
@@ -469,6 +495,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
     <td class="td-price">$1,928,000</td>
+    <td class="td-price td-ppu">$642,666</td>
     <td class="td-center">9</td>
     <td class="td-center">4+</td>
     <td class="td-center">4,432 ft²</td>
@@ -483,6 +510,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$1,850,000</td>
+    <td class="td-price td-ppu">$925,000</td>
     <td class="td-center">3</td>
     <td class="td-center">2</td>
     <td class="td-center">—</td>
@@ -495,6 +523,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$2,075,000</td>
+    <td class="td-price td-ppu">$1,037,500</td>
     <td class="td-center">4</td>
     <td class="td-center">2</td>
     <td class="td-center">2,000 ft²</td>
@@ -507,6 +536,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$3,980,000</td>
+    <td class="td-price td-ppu">$1,990,000</td>
     <td class="td-center">6</td>
     <td class="td-center">4+</td>
     <td class="td-center">—</td>
@@ -519,6 +549,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$2,499,000</td>
+    <td class="td-price td-ppu">$1,249,500</td>
     <td class="td-center">5</td>
     <td class="td-center">3</td>
     <td class="td-center">4,250 ft²</td>
@@ -533,6 +564,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
     <td class="td-price">$2,175,000</td>
+    <td class="td-price td-ppu">$725,000</td>
     <td class="td-center">5</td>
     <td class="td-center">4</td>
     <td class="td-center">3,268 ft²</td>
@@ -545,6 +577,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$2,995,000</td>
+    <td class="td-price td-ppu">$1,497,500</td>
     <td class="td-center">5</td>
     <td class="td-center">4.5</td>
     <td class="td-center">4,250 ft²</td>
@@ -557,6 +590,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$3,750,000</td>
+    <td class="td-price td-ppu">$1,875,000</td>
     <td class="td-center">5</td>
     <td class="td-center">4</td>
     <td class="td-center">2,622 ft²</td>
@@ -569,6 +603,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
     <td class="td-price">$7,995,000</td>
+    <td class="td-price td-ppu">$2,665,000</td>
     <td class="td-center">11</td>
     <td class="td-center">9.5</td>
     <td class="td-center">8,380 ft²</td>
@@ -581,6 +616,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Four-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
     <td class="td-price">$3,950,000</td>
+    <td class="td-price td-ppu">$987,500</td>
     <td class="td-center">9</td>
     <td class="td-center">6</td>
     <td class="td-center">5,939 ft²</td>
@@ -593,6 +629,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
     <td class="td-price">$2,595,000</td>
+    <td class="td-price td-ppu">$865,000</td>
     <td class="td-center">5</td>
     <td class="td-center">4+</td>
     <td class="td-center">4,860 ft²</td>
@@ -605,6 +642,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
     <td class="td-price">$3,150,000</td>
+    <td class="td-price td-ppu">$1,050,000</td>
     <td class="td-center">6</td>
     <td class="td-center">4+</td>
     <td class="td-center">4,506 ft²</td>
@@ -617,6 +655,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
     <td class="td-price">$2,400,000</td>
+    <td class="td-price td-ppu">$800,000</td>
     <td class="td-center">10</td>
     <td class="td-center">8.5</td>
     <td class="td-center">5,200 ft²</td>
@@ -629,6 +668,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Four-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
     <td class="td-price">$4,750,000</td>
+    <td class="td-price td-ppu">$1,187,500</td>
     <td class="td-center">8</td>
     <td class="td-center">6.5</td>
     <td class="td-center">4,725 ft²</td>
@@ -641,6 +681,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Multifamily</span> <span class="pref-tag" style="background:#EEF2FF;color:#4338CA">Multi</span></td>
     <td class="td-price">$6,395,000</td>
+    <td class="td-price td-ppu">$1,279,000</td>
     <td class="td-center">6</td>
     <td class="td-center">6</td>
     <td class="td-center">5,610 ft²</td>
@@ -653,6 +694,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$4,300,000</td>
+    <td class="td-price td-ppu">$2,150,000</td>
     <td class="td-center">4</td>
     <td class="td-center">3.5</td>
     <td class="td-center">4,304 ft²</td>
@@ -665,6 +707,7 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
     </td>
     <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
     <td class="td-price">$3,500,000</td>
+    <td class="td-price td-ppu">$1,750,000</td>
     <td class="td-center">6</td>
     <td class="td-center">3</td>
     <td class="td-center">4,504 ft²</td>
@@ -747,10 +790,23 @@ function applyFilters() {
     document.getElementById('count-badge').textContent = visible + (visible === 1 ? ' listing' : ' listings');
 }
 
-// Prevent double tab opening when clicking the View link inside the clickable row
-document.querySelectorAll('.view-btn').forEach(btn => {
-    btn.addEventListener('click', e => e.stopPropagation());
-});
+let ppuAsc = true;
+function sortByPPU() {
+    const tbody = document.getElementById('listings-body');
+    const rows = Array.from(tbody.querySelectorAll('.listing-row'));
+    rows.sort((a, b) => {
+        const aVal = parseInt(a.querySelector('.td-ppu').textContent.replace(/[$,]/g, '')) || 0;
+        const bVal = parseInt(b.querySelector('.td-ppu').textContent.replace(/[$,]/g, '')) || 0;
+        return ppuAsc ? aVal - bVal : bVal - aVal;
+    });
+    rows.forEach(row => tbody.appendChild(row));
+    const th = document.querySelector('th[onclick="sortByPPU()"]');
+    th.textContent = 'Price/Unit ' + (ppuAsc ? '▲' : '▼');
+    ppuAsc = !ppuAsc;
+}
+
+// Default sort: Price/Unit ascending
+window.addEventListener('DOMContentLoaded', () => { sortByPPU(); });
 </script>
 
 </body>

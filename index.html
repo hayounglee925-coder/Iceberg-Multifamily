@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Iceberg Partners | Property Sourcing Dashboard</title>
+<title>NYC Multifamily Deal Analyzer</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
@@ -15,68 +15,151 @@
     --text-light: #6B7280;
     --border: #E5E7EB;
     --green: #10B981;
+    --green-light: #D1FAE5;
+    --green-dark: #065F46;
+    --blue-light: #EEF2FF;
+    --blue-dark: #4338CA;
+    --amber: #F59E0B;
+    --red: #DC2626;
 }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); }
+button { font-family: inherit; cursor: pointer; }
+input { font-family: inherit; }
 
-.header { background: var(--primary); color: white; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center; }
-.header h1 { font-size: 20px; font-weight: 700; letter-spacing: 1px; }
-.header-sub { font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 2px; }
-.header-right { display: flex; align-items: center; gap: 12px; }
-.live-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
-.header-right span { font-size: 12px; color: rgba(255,255,255,0.6); }
+.header { background: var(--primary); color: white; padding: 18px 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+.header h1 { font-size: 19px; font-weight: 700; letter-spacing: 1.2px; }
+.header-sub { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 3px; }
+.header-actions { display: flex; align-items: center; gap: 8px; }
+.header-btn { background: rgba(255,255,255,0.08); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; transition: all 0.15s; }
+.header-btn:hover { background: rgba(255,255,255,0.18); }
 
 .toolbar { background: white; border-bottom: 1px solid var(--border); padding: 12px 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
-.toolbar-left { display: flex; gap: 8px; flex-wrap: wrap; }
-.filter-btn { padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); background: white; cursor: pointer; transition: all 0.15s; }
-.filter-btn:hover, .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+.toolbar-left { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.filter-btn { padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; border: 1px solid var(--border); background: white; transition: all 0.15s; }
+.filter-btn:hover { background: #F3F4F6; }
+.filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+.divider { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
 .search-box { padding: 6px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; width: 220px; }
-.total-badge { background: var(--primary); color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+.total-badge { background: var(--primary); color: white; padding: 5px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
 
-.container { max-width: 1400px; margin: 0 auto; padding: 24px 32px; }
+.container { max-width: 1500px; margin: 0 auto; padding: 20px 32px 40px; }
 
-.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-.stat-card { background: var(--card); border-radius: 10px; padding: 16px 20px; border: 1px solid var(--border); }
-.stat-area { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
-.stat-count { font-size: 28px; font-weight: 800; color: var(--text); }
-.stat-label { font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
-.stat-detail { font-size: 12px; color: var(--text-light); margin-top: 8px; }
-.stat-range { font-size: 12px; color: var(--accent); font-weight: 600; margin-top: 4px; }
+.stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px; }
+.stat-card { background: var(--card); border-radius: 10px; padding: 14px 18px; border: 1px solid var(--border); }
+.stat-card-label { font-size: 11px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-card-value { font-size: 22px; font-weight: 800; color: var(--text); margin-top: 4px; line-height: 1.2; }
+.stat-card-sub { font-size: 11px; color: var(--text-light); margin-top: 3px; }
 
-.search-links { margin-bottom: 20px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.search-links-label { font-size: 12px; color: var(--text-light); font-weight: 600; }
-.search-link { display: inline-block; padding: 5px 12px; background: #EEF2FF; color: #4338CA; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none; transition: all 0.15s; }
-.search-link:hover { background: #4338CA; color: white; }
+.adv-filters { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; margin-bottom: 16px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.filter-group { display: flex; flex-direction: column; gap: 4px; }
+.filter-group-label { font-size: 11px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+.filter-row { display: flex; gap: 6px; align-items: center; }
+.filter-row input[type="number"] { width: 100%; padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; }
+.filter-row input[type="range"] { width: 100%; accent-color: var(--accent); }
+.filter-range-display { font-size: 11px; color: var(--accent); font-weight: 600; }
+.reset-btn { background: white; color: var(--text-light); border: 1px solid var(--border); padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+.reset-btn:hover { background: #F3F4F6; color: var(--text); }
 
 .table-container { background: var(--card); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; }
-table { width: 100%; border-collapse: collapse; }
+.table-scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 1100px; }
 thead { background: #F9FAFB; }
-th { padding: 10px 16px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-light); border-bottom: 1px solid var(--border); }
-td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
+th { padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-light); border-bottom: 1px solid var(--border); white-space: nowrap; }
+th.sortable { cursor: pointer; user-select: none; }
+th.sortable:hover { color: var(--text); }
+th.active-sort { color: var(--accent); }
+th.center { text-align: center; }
+td { padding: 11px 12px; font-size: 13px; border-bottom: 1px solid #F3F4F6; vertical-align: middle; }
 .listing-row { cursor: pointer; transition: background 0.1s; }
 .listing-row:hover { background: #F0F7FF; }
-.listing-row.hidden { display: none; }
-.td-address { min-width: 200px; }
 .address-main { font-weight: 600; color: var(--text); }
 .address-sub { font-size: 11px; color: var(--text-light); margin-top: 2px; }
-.td-price { font-weight: 700; color: var(--text); white-space: nowrap; }
-.td-ppu { color: var(--accent); font-weight: 600; font-size: 12px; }
-.td-center { text-align: center; }
-.type-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #F3F4F6; color: #374151; }
-.pref-tag { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-left: 4px; }
-.view-btn { color: var(--accent); text-decoration: none; font-weight: 600; font-size: 12px; }
-.view-btn:hover { text-decoration: underline; }
+.num { font-weight: 700; white-space: nowrap; }
+.num-accent { color: var(--accent); }
+.num-center { text-align: center; }
+.type-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; background: #F3F4F6; color: #374151; white-space: nowrap; }
+.type-badge.pref { background: var(--green-light); color: var(--green-dark); }
+.type-badge.multi { background: var(--blue-light); color: var(--blue-dark); }
+.score-pill { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 700; min-width: 42px; text-align: center; }
+.score-pill.tier-top { background: var(--green-light); color: var(--green-dark); }
+.score-pill.tier-mid { background: #FEF3C7; color: #92400E; }
+.score-pill.tier-low { background: #FEE2E2; color: #991B1B; }
+.view-btn { color: var(--accent); text-decoration: none; font-weight: 600; font-size: 12px; padding: 4px 8px; border-radius: 4px; }
+.view-btn:hover { background: #EEF2FF; text-decoration: underline; }
 
-.footer { text-align: center; padding: 20px; font-size: 11px; color: var(--text-light); }
+.empty-state { padding: 60px 20px; text-align: center; color: var(--text-light); font-size: 14px; }
 
-.legend { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; }
-.legend-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-light); }
+.footer { text-align: center; padding: 24px; font-size: 11px; color: var(--text-light); }
+
+.legend { display: flex; gap: 14px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-light); }
 .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
 
+/* Modal / Panel */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; z-index: 100; }
+.modal-overlay.visible { display: block; }
+.side-panel { position: fixed; top: 0; right: 0; width: 480px; max-width: 100vw; height: 100vh; background: white; box-shadow: -8px 0 30px rgba(0,0,0,0.15); z-index: 101; transform: translateX(100%); transition: transform 0.25s ease; overflow-y: auto; }
+.side-panel.visible { transform: translateX(0); }
+.side-panel-header { padding: 22px 26px 18px; background: var(--primary); color: white; position: sticky; top: 0; z-index: 2; }
+.side-panel-close { position: absolute; top: 16px; right: 16px; background: rgba(255,255,255,0.15); border: none; color: white; width: 28px; height: 28px; border-radius: 50%; font-size: 18px; line-height: 1; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+.side-panel-close:hover { background: rgba(255,255,255,0.3); }
+.side-panel-body { padding: 20px 26px 40px; }
+.panel-address { font-size: 18px; font-weight: 700; margin-bottom: 3px; padding-right: 32px; }
+.panel-sub { font-size: 12px; opacity: 0.7; }
+.panel-link { display: inline-block; margin-top: 10px; font-size: 12px; color: #93C5FD; text-decoration: underline; }
+
+.panel-section { margin-bottom: 22px; }
+.panel-section-title { font-size: 11px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 2px solid var(--border); }
+.kv-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; font-size: 13px; gap: 8px; }
+.kv-row.highlight { background: #F0F7FF; padding: 10px 12px; border-radius: 6px; margin: 6px 0; border: 1px solid #DBEAFE; }
+.kv-row.deduct { color: var(--text-light); }
+.kv-label { color: var(--text-light); font-size: 12px; }
+.kv-label small { font-size: 10.5px; color: var(--text-light); font-weight: 500; }
+.kv-value { font-weight: 700; font-family: 'SF Mono', Monaco, Consolas, monospace; text-align: right; }
+.kv-value.big { font-size: 16px; color: var(--accent); }
+.kv-value.negative { color: var(--red); }
+
+.score-summary { background: #F9FAFB; border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.score-big { font-size: 38px; font-weight: 800; text-align: center; margin-bottom: 4px; line-height: 1; }
+.score-big.tier-top { color: var(--green); }
+.score-big.tier-mid { color: var(--amber); }
+.score-big.tier-low { color: var(--red); }
+.score-big small { font-size: 15px; color: var(--text-light); font-weight: 600; }
+.score-label { text-align: center; font-size: 11px; font-weight: 700; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.7px; margin-bottom: 14px; }
+.score-breakdown-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 12px; border-top: 1px dashed #E5E7EB; }
+.score-breakdown-row:first-of-type { border-top: none; }
+.score-breakdown-row .label { color: var(--text-light); }
+.score-breakdown-row .val { font-weight: 700; font-family: 'SF Mono', Monaco, Consolas, monospace; }
+
+/* Settings modal */
+.settings-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 520px; max-width: 95vw; max-height: 90vh; background: white; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); z-index: 102; overflow: hidden; display: none; flex-direction: column; }
+.settings-modal.visible { display: flex; }
+.settings-header { padding: 18px 24px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+.settings-header h2 { font-size: 17px; font-weight: 700; }
+.settings-body { padding: 18px 24px; overflow-y: auto; }
+.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.settings-group { margin-bottom: 14px; }
+.settings-group.full { grid-column: span 2; }
+.settings-group label { display: block; font-size: 11px; font-weight: 700; color: var(--text-light); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+.settings-input-row { display: flex; align-items: center; gap: 8px; }
+.settings-input-row input { flex: 1; padding: 7px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px; font-weight: 700; }
+.settings-unit { font-size: 12px; color: var(--text-light); min-width: 36px; text-align: left; }
+.settings-hint { font-size: 11px; color: var(--text-light); margin-top: 4px; line-height: 1.4; }
+.settings-actions { padding: 14px 24px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 10px; background: #FAFBFC; }
+.btn-secondary { background: white; color: var(--text); border: 1px solid var(--border); padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+.btn-secondary:hover { background: #F3F4F6; }
+.btn-primary { background: var(--primary); color: white; border: none; padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+.btn-primary:hover { background: #1E3A5F; }
+
+.close-x { background: #F3F4F6; color: var(--text); border: none; width: 28px; height: 28px; border-radius: 50%; font-size: 18px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.close-x:hover { background: #E5E7EB; }
+
 @media (max-width: 900px) {
-    .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .container { padding: 16px; }
-    table { font-size: 12px; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .adv-filters { grid-template-columns: 1fr 1fr; }
+  .container { padding: 16px; }
+  .side-panel { width: 100vw; }
+  .settings-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -84,738 +167,709 @@ td { padding: 12px 16px; font-size: 13px; border-bottom: 1px solid #F3F4F6; }
 
 <div class="header">
     <div>
-        <h1>ICEBERG PARTNERS LLC</h1>
-        <div class="header-sub">Multifamily Acquisition Sourcing Dashboard — Verified Links Only</div>
+        <h1>NYC MULTIFAMILY DEAL ANALYZER</h1>
+        <div class="header-sub">Underwriting & Sourcing · 2-4 Family and Small Multifamily Assets</div>
     </div>
-    <div class="header-right">
-        <span class="live-dot"></span>
-        <span>Last updated: March 29, 2026</span>
+    <div class="header-actions">
+        <button class="header-btn" onclick="openSettings()">⚙ Assumptions</button>
+        <button class="header-btn" onclick="exportCSV()">⬇ Export CSV</button>
     </div>
 </div>
 
 <div class="toolbar">
     <div class="toolbar-left">
-        <button class="filter-btn active" onclick="filterArea('all')">All</button>
-        <button class="filter-btn" onclick="filterArea('Brooklyn')">Brooklyn</button>
-        <button class="filter-btn" onclick="filterArea('Long Island City')">LIC</button>
-        <button class="filter-btn" onclick="filterArea('Astoria')">Astoria</button>
-        <button class="filter-btn" onclick="filterArea('Manhattan')">Manhattan</button>
-        <span style="color:#D1D5DB">|</span>
-        <button class="filter-btn" onclick="filterType('Three')">3-Family</button>
-        <button class="filter-btn" onclick="filterType('Four')">4-Family</button>
-        <button class="filter-btn" onclick="filterType('preferred')">3-4 Fam Only</button>
+        <button class="filter-btn active" data-area="all" onclick="setArea('all')">All</button>
+        <button class="filter-btn" data-area="Brooklyn" onclick="setArea('Brooklyn')">Brooklyn</button>
+        <button class="filter-btn" data-area="Long Island City" onclick="setArea('Long Island City')">LIC</button>
+        <button class="filter-btn" data-area="Astoria" onclick="setArea('Astoria')">Astoria</button>
+        <button class="filter-btn" data-area="Manhattan" onclick="setArea('Manhattan')">Manhattan</button>
+        <div class="divider"></div>
+        <button class="filter-btn" data-type="preferred" onclick="setType('preferred')">3-4 Fam Only</button>
+        <button class="filter-btn" data-type="Three" onclick="setType('Three')">3-Family</button>
+        <button class="filter-btn" data-type="Four" onclick="setType('Four')">4-Family</button>
+        <button class="filter-btn" data-type="Multifamily" onclick="setType('Multifamily')">Multi (5+)</button>
     </div>
     <div style="display:flex;gap:8px;align-items:center;">
-        <input type="text" class="search-box" placeholder="Search address..." oninput="searchFilter(this.value)">
+        <input type="text" class="search-box" id="search-box" placeholder="Search address or area..." oninput="setSearch(this.value)">
         <span class="total-badge" id="count-badge">41 listings</span>
     </div>
 </div>
 
 <div class="container">
 
-    <div class="stats-grid">
-        <div class="stat-card" style="border-top: 3px solid #0891B2">
-            <div class="stat-area" style="color:#0891B2">Astoria</div>
-            <div class="stat-count">12</div>
-            <div class="stat-label">listings</div>
-            <div class="stat-detail">3 are 3-4 Family</div>
-            <div class="stat-range">$1,049,000 – $3,550,000</div>
-        </div>
-        <div class="stat-card" style="border-top: 3px solid #2563EB">
-            <div class="stat-area" style="color:#2563EB">Brooklyn</div>
-            <div class="stat-count">13</div>
-            <div class="stat-label">listings</div>
-            <div class="stat-detail">6 are 3-4 Family</div>
-            <div class="stat-range">$1,100,000 – $3,795,000</div>
-        </div>
-        <div class="stat-card" style="border-top: 3px solid #7C3AED">
-            <div class="stat-area" style="color:#7C3AED">Long Island City</div>
-            <div class="stat-count">4</div>
-            <div class="stat-label">listings</div>
-            <div class="stat-detail">0 are 3-4 Family</div>
-            <div class="stat-range">$1,850,000 – $3,980,000</div>
-        </div>
-        <div class="stat-card" style="border-top: 3px solid #DC2626">
-            <div class="stat-area" style="color:#DC2626">Manhattan</div>
-            <div class="stat-count">12</div>
-            <div class="stat-label">listings</div>
-            <div class="stat-detail">7 are 3-4 Family</div>
-            <div class="stat-range">$2,175,000 – $7,995,000</div>
-        </div>
-    </div>
+    <div class="stats-grid" id="stats-grid"></div>
 
-    <div class="search-links">
-        <span class="search-links-label">View all on StreetEasy:</span>
-        <a href="https://streeteasy.com/for-sale/brooklyn/type:M%7Cprice:1000000-10000000" target="_blank" rel="noopener" class="search-link">Brooklyn</a>
-        <a href="https://streeteasy.com/for-sale/long-island-city/type:M%7Cprice:1000000-10000000" target="_blank" rel="noopener" class="search-link">Long Island City</a>
-        <a href="https://streeteasy.com/for-sale/astoria/type:M%7Cprice:1000000-10000000" target="_blank" rel="noopener" class="search-link">Astoria</a>
-        <a href="https://streeteasy.com/for-sale/manhattan/type:M%7Cprice:1000000-10000000" target="_blank" rel="noopener" class="search-link">Manhattan</a>
+    <div class="adv-filters">
+        <div class="filter-group">
+            <div class="filter-group-label">Price Range ($)</div>
+            <div class="filter-row">
+                <input type="number" id="price-min" placeholder="Min" oninput="updateFilters()">
+                <span style="font-size:11px;color:var(--text-light)">–</span>
+                <input type="number" id="price-max" placeholder="Max" oninput="updateFilters()">
+            </div>
+        </div>
+        <div class="filter-group">
+            <div class="filter-group-label">Units</div>
+            <div class="filter-row">
+                <input type="number" id="units-min" placeholder="Min" oninput="updateFilters()">
+                <span style="font-size:11px;color:var(--text-light)">–</span>
+                <input type="number" id="units-max" placeholder="Max" oninput="updateFilters()">
+            </div>
+        </div>
+        <div class="filter-group">
+            <div class="filter-group-label">Min Cap Rate</div>
+            <div class="filter-row">
+                <input type="range" id="caprate-slider" min="0" max="10" step="0.25" value="0" oninput="onCapRateChange(this.value)">
+                <span class="filter-range-display" id="caprate-display" style="min-width:50px">≥ 0%</span>
+            </div>
+        </div>
+        <div class="filter-group">
+            <div class="filter-group-label">Min Score</div>
+            <div class="filter-row">
+                <input type="range" id="score-slider" min="0" max="100" step="5" value="0" oninput="onScoreChange(this.value)">
+                <span class="filter-range-display" id="score-display" style="min-width:50px">≥ 0</span>
+            </div>
+            <button class="reset-btn" onclick="resetFilters()" style="margin-top:5px;align-self:flex-start">Reset all filters</button>
+        </div>
     </div>
 
     <div class="legend">
-        <div class="legend-item"><div class="legend-dot" style="background:#D1FAE5"></div> Preferred (3-4 Family)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#EEF2FF"></div> Multi (5+ Family)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#F3F4F6"></div> Review (2 Family)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#D1FAE5"></div> 3-4 Family (Preferred Core)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#EEF2FF"></div> Multifamily (5+)</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#F3F4F6"></div> 2-Family (Review)</div>
+        <div class="legend-item" style="margin-left:auto"><em style="font-size:11px;color:var(--text-light)">Click any row for full pro forma.</em></div>
     </div>
 
     <div class="table-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>Address</th>
-                    <th>Type</th>
-                    <th>Price</th>
-                    <th id="ppu-header" style="cursor:pointer" onclick="sortByPPU()">Price/Unit ▼</th>
-                    <th>Beds</th>
-                    <th>Baths</th>
-                    <th>SqFt</th>
-                    <th>Link</th>
-                </tr>
-            </thead>
-            <tbody id="listings-body">
-
-<!-- ASTORIA (12) -->
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1812229', '_blank')">
-    <td class="td-address">
-        <div class="address-main">25-04 42nd Street</div>
-        <div class="address-sub">Astoria, Queens</div>
-    </td>
-    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
-    <td class="td-price">$2,200,000</td>
-    <td class="td-price td-ppu">$733,333</td>
-    <td class="td-center">6</td>
-    <td class="td-center">4</td>
-    <td class="td-center">3,200 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1812229" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/31_65-23-street-astoria/twnhse', '_blank')">
-    <td class="td-address">
-        <div class="address-main">31-65 23rd Street</div>
-        <div class="address-sub">Astoria, Queens</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$2,399,888</td>
-    <td class="td-price td-ppu">$1,199,944</td>
-    <td class="td-center">7</td>
-    <td class="td-center">5</td>
-    <td class="td-center">2,851 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/31_65-23-street-astoria/twnhse" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/21_27-29-street-astoria/house', '_blank')">
-    <td class="td-address">
-        <div class="address-main">21-27 29th Street</div>
-        <div class="address-sub">Ditmars-Steinway, Astoria</div>
-    </td>
-    <td><span class="type-badge">Four-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
-    <td class="td-price">$2,395,000</td>
-    <td class="td-price td-ppu">$598,750</td>
-    <td class="td-center">4</td>
-    <td class="td-center">5</td>
-    <td class="td-center">—</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/21_27-29-street-astoria/house" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/14_24-astoria-boulevard-astoria/package', '_blank')">
-    <td class="td-address">
-        <div class="address-main">14-24 Astoria Boulevard</div>
-        <div class="address-sub">Astoria, Queens</div>
-    </td>
-    <td><span class="type-badge">Four-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
-    <td class="td-price">$2,995,000</td>
-    <td class="td-price td-ppu">$748,750</td>
-    <td class="td-center">22</td>
-    <td class="td-center">6+</td>
-    <td class="td-center">6,954 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/14_24-astoria-boulevard-astoria/package" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/20_38-29-street-astoria/2fam', '_blank')">
-    <td class="td-address">
-        <div class="address-main">20-38 29th Street</div>
-        <div class="address-sub">Ditmars-Steinway, Astoria</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$1,300,000</td>
-    <td class="td-price td-ppu">$650,000</td>
-    <td class="td-center">3</td>
-    <td class="td-center">3</td>
-    <td class="td-center">1,600 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/20_38-29-street-astoria/2fam" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1816567', '_blank')">
-    <td class="td-address">
-        <div class="address-main">31-73 41st Street</div>
-        <div class="address-sub">Astoria, Queens</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$1,889,000</td>
-    <td class="td-price td-ppu">$944,500</td>
-    <td class="td-center">5</td>
-    <td class="td-center">4</td>
-    <td class="td-center">2,986 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1816567" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/25_37-48-street-astoria/2family', '_blank')">
-    <td class="td-address">
-        <div class="address-main">25-37 48th Street</div>
-        <div class="address-sub">Astoria, Queens</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$1,049,000</td>
-    <td class="td-price td-ppu">$524,500</td>
-    <td class="td-center">3</td>
-    <td class="td-center">2</td>
-    <td class="td-center">—</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/25_37-48-street-astoria/2family" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/30_71-32-street-astoria/2-fam', '_blank')">
-    <td class="td-address">
-        <div class="address-main">30-71 32nd Street</div>
-        <div class="address-sub">Astoria, Queens</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$1,600,000</td>
-    <td class="td-price td-ppu">$800,000</td>
-    <td class="td-center">5</td>
-    <td class="td-center">3</td>
-    <td class="td-center">—</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/30_71-32-street-astoria/2-fam" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1816287', '_blank')">
-    <td class="td-address">
-        <div class="address-main">25-49 42nd Street</div>
-        <div class="address-sub">Astoria, Queens</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$1,765,000</td>
-    <td class="td-price td-ppu">$882,500</td>
-    <td class="td-center">8</td>
-    <td class="td-center">5</td>
-    <td class="td-center">2,070 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1816287" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1816140', '_blank')">
-    <td class="td-address">
-        <div class="address-main">31-51 35th Street</div>
-        <div class="address-sub">Astoria, Queens</div>
-    </td>
-    <td><span class="type-badge">Multifamily</span> <span class="pref-tag" style="background:#EEF2FF;color:#4338CA">Multi</span></td>
-    <td class="td-price">$1,550,000</td>
-    <td class="td-price td-ppu">$258,333</td>
-    <td class="td-center">12</td>
-    <td class="td-center">6</td>
-    <td class="td-center">—</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1816140" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1815649', '_blank')">
-    <td class="td-address">
-        <div class="address-main">30-74 30th Street</div>
-        <div class="address-sub">Astoria, Queens</div>
-    </td>
-    <td><span class="type-badge">Multifamily</span> <span class="pref-tag" style="background:#EEF2FF;color:#4338CA">Multi</span></td>
-    <td class="td-price">$3,550,000</td>
-    <td class="td-price td-ppu">$295,833</td>
-    <td class="td-center">16</td>
-    <td class="td-center">12</td>
-    <td class="td-center">6,637 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1815649" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1815956', '_blank')">
-    <td class="td-address">
-        <div class="address-main">23-64 35th Street</div>
-        <div class="address-sub">Ditmars-Steinway, Astoria</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$1,550,000</td>
-    <td class="td-price td-ppu">$775,000</td>
-    <td class="td-center">3</td>
-    <td class="td-center">2.5</td>
-    <td class="td-center">1,768 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1815956" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-
-<!-- BROOKLYN (13) -->
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/119-33-street-brooklyn/1', '_blank')">
-    <td class="td-address">
-        <div class="address-main">119 33rd Street</div>
-        <div class="address-sub">Greenwood, Brooklyn</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$1,450,000</td>
-    <td class="td-price td-ppu">$725,000</td>
-    <td class="td-center">5</td>
-    <td class="td-center">3</td>
-    <td class="td-center">1,920 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/119-33-street-brooklyn/1" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/363a-12-street-brooklyn/twnhse', '_blank')">
-    <td class="td-address">
-        <div class="address-main">363a 12th Street</div>
-        <div class="address-sub">Park Slope, Brooklyn</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$3,795,000</td>
-    <td class="td-price td-ppu">$1,897,500</td>
-    <td class="td-center">4</td>
-    <td class="td-center">2+</td>
-    <td class="td-center">2,550 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/363a-12-street-brooklyn/twnhse" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/534-kosciuszko-street-brooklyn/1', '_blank')">
-    <td class="td-address">
-        <div class="address-main">534 Kosciuszko Street</div>
-        <div class="address-sub">Stuyvesant Heights, Brooklyn</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$1,850,000</td>
-    <td class="td-price td-ppu">$925,000</td>
-    <td class="td-center">6</td>
-    <td class="td-center">4</td>
-    <td class="td-center">2,340 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/534-kosciuszko-street-brooklyn/1" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/2315-82-street-brooklyn/1', '_blank')">
-    <td class="td-address">
-        <div class="address-main">2315 82nd Street</div>
-        <div class="address-sub">Gravesend, Brooklyn</div>
-    </td>
-    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
-    <td class="td-price">$2,480,000</td>
-    <td class="td-price td-ppu">$826,667</td>
-    <td class="td-center">9</td>
-    <td class="td-center">6.5</td>
-    <td class="td-center">3,780 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/2315-82-street-brooklyn/1" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/114-erasmus-street-brooklyn/development', '_blank')">
-    <td class="td-address">
-        <div class="address-main">114 Erasmus Street</div>
-        <div class="address-sub">Flatbush, Brooklyn</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$2,999,000</td>
-    <td class="td-price td-ppu">$1,499,500</td>
-    <td class="td-center">16</td>
-    <td class="td-center">16</td>
-    <td class="td-center">20,000 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/114-erasmus-street-brooklyn/development" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1818673', '_blank')">
-    <td class="td-address">
-        <div class="address-main">907 Jefferson Avenue</div>
-        <div class="address-sub">Stuyvesant Heights, Brooklyn</div>
-    </td>
-    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
-    <td class="td-price">$2,195,000</td>
-    <td class="td-price td-ppu">$731,667</td>
-    <td class="td-center">11</td>
-    <td class="td-center">6</td>
-    <td class="td-center">2,970 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1818673" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/572-92-street-brooklyn/multi', '_blank')">
-    <td class="td-address">
-        <div class="address-main">572 92nd Street</div>
-        <div class="address-sub">Fort Hamilton, Brooklyn</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$1,699,000</td>
-    <td class="td-price td-ppu">$849,500</td>
-    <td class="td-center">7</td>
-    <td class="td-center">3+</td>
-    <td class="td-center">3,340 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/572-92-street-brooklyn/multi" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1818458', '_blank')">
-    <td class="td-address">
-        <div class="address-main">75 Beadel Street</div>
-        <div class="address-sub">East Williamsburg, Brooklyn</div>
-    </td>
-    <td><span class="type-badge">Four-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
-    <td class="td-price">$2,300,000</td>
-    <td class="td-price td-ppu">$575,000</td>
-    <td class="td-center">7</td>
-    <td class="td-center">4</td>
-    <td class="td-center">3,300 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1818458" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1818527', '_blank')">
-    <td class="td-address">
-        <div class="address-main">1998 Bergen Street</div>
-        <div class="address-sub">Crown Heights, Brooklyn</div>
-    </td>
-    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
-    <td class="td-price">$1,299,000</td>
-    <td class="td-price td-ppu">$433,000</td>
-    <td class="td-center">6</td>
-    <td class="td-center">3</td>
-    <td class="td-center">2,604 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1818527" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1818513', '_blank')">
-    <td class="td-address">
-        <div class="address-main">584 Sterling Place</div>
-        <div class="address-sub">Crown Heights, Brooklyn</div>
-    </td>
-    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
-    <td class="td-price">$3,500,000</td>
-    <td class="td-price td-ppu">$1,166,667</td>
-    <td class="td-center">6</td>
-    <td class="td-center">3.5</td>
-    <td class="td-center">—</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1818513" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/429-clinton-street-brooklyn/1', '_blank')">
-    <td class="td-address">
-        <div class="address-main">429 Clinton Street</div>
-        <div class="address-sub">Carroll Gardens, Brooklyn</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$3,100,000</td>
-    <td class="td-price td-ppu">$1,550,000</td>
-    <td class="td-center">3</td>
-    <td class="td-center">2.5</td>
-    <td class="td-center">1,900 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/429-clinton-street-brooklyn/1" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1818409', '_blank')">
-    <td class="td-address">
-        <div class="address-main">556 Hart Street</div>
-        <div class="address-sub">Bushwick, Brooklyn</div>
-    </td>
-    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
-    <td class="td-price">$2,000,000</td>
-    <td class="td-price td-ppu">$666,667</td>
-    <td class="td-center">9</td>
-    <td class="td-center">6</td>
-    <td class="td-center">3,100 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1818409" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1818429', '_blank')">
-    <td class="td-address">
-        <div class="address-main">1828 Rockaway Parkway</div>
-        <div class="address-sub">Canarsie, Brooklyn</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$1,100,000</td>
-    <td class="td-price td-ppu">$550,000</td>
-    <td class="td-center">6</td>
-    <td class="td-center">3.5</td>
-    <td class="td-center">2,900 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1818429" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-
-<!-- LONG ISLAND CITY (4) -->
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1813270', '_blank')">
-    <td class="td-address">
-        <div class="address-main">34-09 37th Avenue</div>
-        <div class="address-sub">Long Island City, Queens</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$1,850,000</td>
-    <td class="td-price td-ppu">$925,000</td>
-    <td class="td-center">3</td>
-    <td class="td-center">2</td>
-    <td class="td-center">—</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1813270" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1810778', '_blank')">
-    <td class="td-address">
-        <div class="address-main">44-66 23rd Street</div>
-        <div class="address-sub">Long Island City, Queens</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$2,075,000</td>
-    <td class="td-price td-ppu">$1,037,500</td>
-    <td class="td-center">4</td>
-    <td class="td-center">2</td>
-    <td class="td-center">2,000 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1810778" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/21_18-45-avenue-long_island_city/1and-2', '_blank')">
-    <td class="td-address">
-        <div class="address-main">21-18 45th Avenue</div>
-        <div class="address-sub">Long Island City, Queens</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$3,980,000</td>
-    <td class="td-price td-ppu">$1,990,000</td>
-    <td class="td-center">6</td>
-    <td class="td-center">4+</td>
-    <td class="td-center">—</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/21_18-45-avenue-long_island_city/1and-2" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1784097', '_blank')">
-    <td class="td-address">
-        <div class="address-main">36-26 11th Street</div>
-        <div class="address-sub">Long Island City, Queens</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$2,499,000</td>
-    <td class="td-price td-ppu">$1,249,500</td>
-    <td class="td-center">5</td>
-    <td class="td-center">3</td>
-    <td class="td-center">4,250 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1784097" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-
-<!-- MANHATTAN (12) -->
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/the-harlem-belle/1', '_blank')">
-    <td class="td-address">
-        <div class="address-main">304 West 137th Street</div>
-        <div class="address-sub">Central Harlem, Manhattan</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$2,995,000</td>
-    <td class="td-price td-ppu">$1,497,500</td>
-    <td class="td-center">5</td>
-    <td class="td-center">4.5</td>
-    <td class="td-center">4,250 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/the-harlem-belle/1" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1817565', '_blank')">
-    <td class="td-address">
-        <div class="address-main">2044 Madison Avenue</div>
-        <div class="address-sub">Central Harlem, Manhattan</div>
-    </td>
-    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
-    <td class="td-price">$2,175,000</td>
-    <td class="td-price td-ppu">$725,000</td>
-    <td class="td-center">5</td>
-    <td class="td-center">4</td>
-    <td class="td-center">3,268 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1817565" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/151-east-29-street-new_york/na', '_blank')">
-    <td class="td-address">
-        <div class="address-main">151 East 29th Street</div>
-        <div class="address-sub">Kips Bay, Manhattan</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$3,750,000</td>
-    <td class="td-price td-ppu">$1,875,000</td>
-    <td class="td-center">5</td>
-    <td class="td-center">4</td>
-    <td class="td-center">2,622 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/151-east-29-street-new_york/na" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1816914', '_blank')">
-    <td class="td-address">
-        <div class="address-main">322 West 80th Street</div>
-        <div class="address-sub">Upper West Side, Manhattan</div>
-    </td>
-    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
-    <td class="td-price">$7,995,000</td>
-    <td class="td-price td-ppu">$2,665,000</td>
-    <td class="td-center">11</td>
-    <td class="td-center">9.5</td>
-    <td class="td-center">8,380 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1816914" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1816595', '_blank')">
-    <td class="td-address">
-        <div class="address-main">2099 5th Avenue</div>
-        <div class="address-sub">Central Harlem, Manhattan</div>
-    </td>
-    <td><span class="type-badge">Four-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
-    <td class="td-price">$3,950,000</td>
-    <td class="td-price td-ppu">$987,500</td>
-    <td class="td-center">9</td>
-    <td class="td-center">6</td>
-    <td class="td-center">5,939 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1816595" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1815753', '_blank')">
-    <td class="td-address">
-        <div class="address-main">246 West 132nd Street</div>
-        <div class="address-sub">Central Harlem, Manhattan</div>
-    </td>
-    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
-    <td class="td-price">$2,595,000</td>
-    <td class="td-price td-ppu">$865,000</td>
-    <td class="td-center">5</td>
-    <td class="td-center">4+</td>
-    <td class="td-center">4,860 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1815753" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/312-west-103-street-new_york/na', '_blank')">
-    <td class="td-address">
-        <div class="address-main">312 West 103rd Street</div>
-        <div class="address-sub">Upper West Side, Manhattan</div>
-    </td>
-    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
-    <td class="td-price">$3,150,000</td>
-    <td class="td-price td-ppu">$1,050,000</td>
-    <td class="td-center">6</td>
-    <td class="td-center">4+</td>
-    <td class="td-center">4,506 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/312-west-103-street-new_york/na" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/2070-5-avenue-new_york/1', '_blank')">
-    <td class="td-address">
-        <div class="address-main">2070 Fifth Avenue</div>
-        <div class="address-sub">Central Harlem, Manhattan</div>
-    </td>
-    <td><span class="type-badge">Three-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
-    <td class="td-price">$2,400,000</td>
-    <td class="td-price td-ppu">$800,000</td>
-    <td class="td-center">10</td>
-    <td class="td-center">8.5</td>
-    <td class="td-center">5,200 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/2070-5-avenue-new_york/1" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/sale/1814605', '_blank')">
-    <td class="td-address">
-        <div class="address-main">115 West 87th Street</div>
-        <div class="address-sub">Upper West Side, Manhattan</div>
-    </td>
-    <td><span class="type-badge">Four-family</span> <span class="pref-tag" style="background:#D1FAE5;color:#065F46">Preferred</span></td>
-    <td class="td-price">$4,750,000</td>
-    <td class="td-price td-ppu">$1,187,500</td>
-    <td class="td-center">8</td>
-    <td class="td-center">6.5</td>
-    <td class="td-center">4,725 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/sale/1814605" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/27-west-9-street-new_york/twnhs', '_blank')">
-    <td class="td-address">
-        <div class="address-main">27 West 9th Street</div>
-        <div class="address-sub">Greenwich Village, Manhattan</div>
-    </td>
-    <td><span class="type-badge">Multifamily</span> <span class="pref-tag" style="background:#EEF2FF;color:#4338CA">Multi</span></td>
-    <td class="td-price">$6,395,000</td>
-    <td class="td-price td-ppu">$1,279,000</td>
-    <td class="td-center">6</td>
-    <td class="td-center">6</td>
-    <td class="td-center">5,610 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/27-west-9-street-new_york/twnhs" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/127-west-122-street-new_york/th', '_blank')">
-    <td class="td-address">
-        <div class="address-main">127 West 122nd Street</div>
-        <div class="address-sub">South Harlem, Manhattan</div>
-    </td>
-    <td><span class="type-badge">Two-family</span> <span class="pref-tag" style="background:#F3F4F6;color:#374151">Review</span></td>
-    <td class="td-price">$3,500,000</td>
-    <td class="td-price td-ppu">$1,750,000</td>
-    <td class="td-center">6</td>
-    <td class="td-center">3</td>
-    <td class="td-center">4,504 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/127-west-122-street-new_york/th" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-<tr class="listing-row" onclick="window.open('https://streeteasy.com/building/447-west-47-street-new_york/multifamily', '_blank')">
-    <td class="td-address">
-        <div class="address-main">447 West 47th Street</div>
-        <div class="address-sub">Hell's Kitchen, Manhattan</div>
-    </td>
-    <td><span class="type-badge">Multifamily</span> <span class="pref-tag" style="background:#EEF2FF;color:#4338CA">Multi</span></td>
-    <td class="td-price">$6,150,000</td>
-    <td class="td-price td-ppu">$615,000</td>
-    <td class="td-center">13</td>
-    <td class="td-center">10.5</td>
-    <td class="td-center">7,686 ft²</td>
-    <td class="td-center"><a href="https://streeteasy.com/building/447-west-47-street-new_york/multifamily" target="_blank" rel="noopener" class="view-btn">View →</a></td>
-</tr>
-
-            </tbody>
-        </table>
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="address" data-label="Address" onclick="sortBy('address')">Address</th>
+                        <th>Type</th>
+                        <th class="sortable" data-sort="price" data-label="Price" onclick="sortBy('price')">Price</th>
+                        <th class="sortable" data-sort="ppu" data-label="$/Unit" onclick="sortBy('ppu')">$/Unit</th>
+                        <th class="center">Units</th>
+                        <th class="sortable center" data-sort="beds" data-label="Beds" onclick="sortBy('beds')">Beds</th>
+                        <th class="sortable center" data-sort="capRate" data-label="Cap Rate" onclick="sortBy('capRate')">Cap Rate</th>
+                        <th class="sortable center" data-sort="coc" data-label="CoC" onclick="sortBy('coc')">CoC</th>
+                        <th class="sortable center" data-sort="score" data-label="Score" onclick="sortBy('score')">Score</th>
+                        <th class="center">Listing</th>
+                    </tr>
+                </thead>
+                <tbody id="listings-body"></tbody>
+            </table>
+        </div>
     </div>
 
 </div>
 
-<div class="footer">Data as of March 29, 2026 · Source: StreetEasy · Iceberg Partners LLC Internal Use Only</div>
+<div class="footer">Data as of March 29, 2026 · Source: StreetEasy · Pro forma assumptions adjustable via ⚙ Assumptions</div>
+
+<!-- Detail side panel -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeAll()"></div>
+<div class="side-panel" id="detail-panel">
+    <div class="side-panel-header">
+        <button class="side-panel-close" onclick="closeAll()">×</button>
+        <div class="panel-address" id="panel-address"></div>
+        <div class="panel-sub" id="panel-sub"></div>
+        <a href="#" target="_blank" rel="noopener" class="panel-link" id="panel-link">View on StreetEasy →</a>
+    </div>
+    <div class="side-panel-body" id="panel-body"></div>
+</div>
+
+<!-- Settings modal -->
+<div class="settings-modal" id="settings-modal">
+    <div class="settings-header">
+        <h2>Underwriting Assumptions</h2>
+        <button class="close-x" onclick="closeAll()">×</button>
+    </div>
+    <div class="settings-body">
+        <div class="settings-group full">
+            <label>Base Rent per Bedroom (monthly)</label>
+            <div class="settings-input-row">
+                <input type="number" id="s-rent" step="50">
+                <span class="settings-unit">$/mo</span>
+            </div>
+            <div class="settings-hint">Auto-adjusted by neighborhood. Manhattan premium +30-50%, outer Brooklyn -20-30%.</div>
+        </div>
+        <div class="settings-grid">
+            <div class="settings-group">
+                <label>Vacancy Rate</label>
+                <div class="settings-input-row"><input type="number" id="s-vac" step="0.5"><span class="settings-unit">%</span></div>
+            </div>
+            <div class="settings-group">
+                <label>OpEx Ratio</label>
+                <div class="settings-input-row"><input type="number" id="s-opex" step="1"><span class="settings-unit">%</span></div>
+            </div>
+            <div class="settings-group">
+                <label>Loan-to-Value</label>
+                <div class="settings-input-row"><input type="number" id="s-ltv" step="1"><span class="settings-unit">%</span></div>
+            </div>
+            <div class="settings-group">
+                <label>Interest Rate</label>
+                <div class="settings-input-row"><input type="number" id="s-rate" step="0.125"><span class="settings-unit">%</span></div>
+            </div>
+            <div class="settings-group full">
+                <label>Amortization Period</label>
+                <div class="settings-input-row"><input type="number" id="s-amort" step="5"><span class="settings-unit">yrs</span></div>
+            </div>
+        </div>
+    </div>
+    <div class="settings-actions">
+        <button class="btn-secondary" onclick="resetAssumptions()">Reset defaults</button>
+        <div style="display:flex;gap:8px">
+            <button class="btn-secondary" onclick="closeAll()">Cancel</button>
+            <button class="btn-primary" onclick="saveAssumptions()">Apply</button>
+        </div>
+    </div>
+</div>
 
 <script>
-let currentArea = 'all';
-let currentType = 'all';
-let currentSearch = '';
-let ppuSortAsc = false;
+// ===== Listing Data =====
+const LISTINGS = [
+    // ASTORIA
+    {id:'as1', address:'25-04 42nd Street', area:'Astoria, Queens', zone:'Astoria', type:'Three-family', units:3, price:2200000, beds:6, baths:'4', sqft:3200, url:'https://streeteasy.com/sale/1812229'},
+    {id:'as2', address:'31-65 23rd Street', area:'Astoria, Queens', zone:'Astoria', type:'Two-family', units:2, price:2399888, beds:7, baths:'5', sqft:2851, url:'https://streeteasy.com/building/31_65-23-street-astoria/twnhse'},
+    {id:'as3', address:'21-27 29th Street', area:'Ditmars-Steinway, Astoria', zone:'Astoria', type:'Four-family', units:4, price:2395000, beds:4, baths:'5', sqft:null, url:'https://streeteasy.com/building/21_27-29-street-astoria/house'},
+    {id:'as4', address:'14-24 Astoria Boulevard', area:'Astoria, Queens', zone:'Astoria', type:'Four-family', units:4, price:2995000, beds:22, baths:'6+', sqft:6954, url:'https://streeteasy.com/building/14_24-astoria-boulevard-astoria/package'},
+    {id:'as5', address:'20-38 29th Street', area:'Ditmars-Steinway, Astoria', zone:'Astoria', type:'Two-family', units:2, price:1300000, beds:3, baths:'3', sqft:1600, url:'https://streeteasy.com/building/20_38-29-street-astoria/2fam'},
+    {id:'as6', address:'31-73 41st Street', area:'Astoria, Queens', zone:'Astoria', type:'Two-family', units:2, price:1889000, beds:5, baths:'4', sqft:2986, url:'https://streeteasy.com/sale/1816567'},
+    {id:'as7', address:'25-37 48th Street', area:'Astoria, Queens', zone:'Astoria', type:'Two-family', units:2, price:1049000, beds:3, baths:'2', sqft:null, url:'https://streeteasy.com/building/25_37-48-street-astoria/2family'},
+    {id:'as8', address:'30-71 32nd Street', area:'Astoria, Queens', zone:'Astoria', type:'Two-family', units:2, price:1600000, beds:5, baths:'3', sqft:null, url:'https://streeteasy.com/building/30_71-32-street-astoria/2-fam'},
+    {id:'as9', address:'25-49 42nd Street', area:'Astoria, Queens', zone:'Astoria', type:'Two-family', units:2, price:1765000, beds:8, baths:'5', sqft:2070, url:'https://streeteasy.com/sale/1816287'},
+    {id:'as10', address:'31-51 35th Street', area:'Astoria, Queens', zone:'Astoria', type:'Multifamily', units:6, price:1550000, beds:12, baths:'6', sqft:null, url:'https://streeteasy.com/sale/1816140'},
+    {id:'as11', address:'30-74 30th Street', area:'Astoria, Queens', zone:'Astoria', type:'Multifamily', units:12, price:3550000, beds:16, baths:'12', sqft:6637, url:'https://streeteasy.com/sale/1815649'},
+    {id:'as12', address:'23-64 35th Street', area:'Ditmars-Steinway, Astoria', zone:'Astoria', type:'Two-family', units:2, price:1550000, beds:3, baths:'2.5', sqft:1768, url:'https://streeteasy.com/sale/1815956'},
+    // BROOKLYN
+    {id:'bk1', address:'119 33rd Street', area:'Greenwood, Brooklyn', zone:'Brooklyn', type:'Two-family', units:2, price:1450000, beds:5, baths:'3', sqft:1920, url:'https://streeteasy.com/building/119-33-street-brooklyn/1'},
+    {id:'bk2', address:'363a 12th Street', area:'Park Slope, Brooklyn', zone:'Brooklyn', type:'Two-family', units:2, price:3795000, beds:4, baths:'2+', sqft:2550, url:'https://streeteasy.com/building/363a-12-street-brooklyn/twnhse'},
+    {id:'bk3', address:'534 Kosciuszko Street', area:'Stuyvesant Heights, Brooklyn', zone:'Brooklyn', type:'Two-family', units:2, price:1850000, beds:6, baths:'4', sqft:2340, url:'https://streeteasy.com/building/534-kosciuszko-street-brooklyn/1'},
+    {id:'bk4', address:'2315 82nd Street', area:'Gravesend, Brooklyn', zone:'Brooklyn', type:'Three-family', units:3, price:2480000, beds:9, baths:'6.5', sqft:3780, url:'https://streeteasy.com/building/2315-82-street-brooklyn/1'},
+    {id:'bk5', address:'114 Erasmus Street', area:'Flatbush, Brooklyn', zone:'Brooklyn', type:'Two-family', units:2, price:2999000, beds:16, baths:'16', sqft:20000, url:'https://streeteasy.com/building/114-erasmus-street-brooklyn/development'},
+    {id:'bk6', address:'907 Jefferson Avenue', area:'Stuyvesant Heights, Brooklyn', zone:'Brooklyn', type:'Three-family', units:3, price:2195000, beds:11, baths:'6', sqft:2970, url:'https://streeteasy.com/sale/1818673'},
+    {id:'bk7', address:'572 92nd Street', area:'Fort Hamilton, Brooklyn', zone:'Brooklyn', type:'Two-family', units:2, price:1699000, beds:7, baths:'3+', sqft:3340, url:'https://streeteasy.com/building/572-92-street-brooklyn/multi'},
+    {id:'bk8', address:'75 Beadel Street', area:'East Williamsburg, Brooklyn', zone:'Brooklyn', type:'Four-family', units:4, price:2300000, beds:7, baths:'4', sqft:3300, url:'https://streeteasy.com/sale/1818458'},
+    {id:'bk9', address:'1998 Bergen Street', area:'Crown Heights, Brooklyn', zone:'Brooklyn', type:'Three-family', units:3, price:1299000, beds:6, baths:'3', sqft:2604, url:'https://streeteasy.com/sale/1818527'},
+    {id:'bk10', address:'584 Sterling Place', area:'Crown Heights, Brooklyn', zone:'Brooklyn', type:'Three-family', units:3, price:3500000, beds:6, baths:'3.5', sqft:null, url:'https://streeteasy.com/sale/1818513'},
+    {id:'bk11', address:'429 Clinton Street', area:'Carroll Gardens, Brooklyn', zone:'Brooklyn', type:'Two-family', units:2, price:3100000, beds:3, baths:'2.5', sqft:1900, url:'https://streeteasy.com/building/429-clinton-street-brooklyn/1'},
+    {id:'bk12', address:'556 Hart Street', area:'Bushwick, Brooklyn', zone:'Brooklyn', type:'Three-family', units:3, price:2000000, beds:9, baths:'6', sqft:3100, url:'https://streeteasy.com/sale/1818409'},
+    {id:'bk13', address:'1828 Rockaway Parkway', area:'Canarsie, Brooklyn', zone:'Brooklyn', type:'Two-family', units:2, price:1100000, beds:6, baths:'3.5', sqft:2900, url:'https://streeteasy.com/sale/1818429'},
+    // LIC
+    {id:'lic1', address:'34-09 37th Avenue', area:'Long Island City, Queens', zone:'Long Island City', type:'Two-family', units:2, price:1850000, beds:3, baths:'2', sqft:null, url:'https://streeteasy.com/sale/1813270'},
+    {id:'lic2', address:'44-66 23rd Street', area:'Long Island City, Queens', zone:'Long Island City', type:'Two-family', units:2, price:2075000, beds:4, baths:'2', sqft:2000, url:'https://streeteasy.com/sale/1810778'},
+    {id:'lic3', address:'21-18 45th Avenue', area:'Long Island City, Queens', zone:'Long Island City', type:'Two-family', units:2, price:3980000, beds:6, baths:'4+', sqft:null, url:'https://streeteasy.com/building/21_18-45-avenue-long_island_city/1and-2'},
+    {id:'lic4', address:'36-26 11th Street', area:'Long Island City, Queens', zone:'Long Island City', type:'Two-family', units:2, price:2499000, beds:5, baths:'3', sqft:4250, url:'https://streeteasy.com/sale/1784097'},
+    // MANHATTAN
+    {id:'mh1', address:'304 West 137th Street', area:'Central Harlem, Manhattan', zone:'Manhattan', type:'Two-family', units:2, price:2995000, beds:5, baths:'4.5', sqft:4250, url:'https://streeteasy.com/building/the-harlem-belle/1'},
+    {id:'mh2', address:'2044 Madison Avenue', area:'Central Harlem, Manhattan', zone:'Manhattan', type:'Three-family', units:3, price:2175000, beds:5, baths:'4', sqft:3268, url:'https://streeteasy.com/sale/1817565'},
+    {id:'mh3', address:'151 East 29th Street', area:'Kips Bay, Manhattan', zone:'Manhattan', type:'Two-family', units:2, price:3750000, beds:5, baths:'4', sqft:2622, url:'https://streeteasy.com/building/151-east-29-street-new_york/na'},
+    {id:'mh4', address:'322 West 80th Street', area:'Upper West Side, Manhattan', zone:'Manhattan', type:'Three-family', units:3, price:7995000, beds:11, baths:'9.5', sqft:8380, url:'https://streeteasy.com/sale/1816914'},
+    {id:'mh5', address:'2099 5th Avenue', area:'Central Harlem, Manhattan', zone:'Manhattan', type:'Four-family', units:4, price:3950000, beds:9, baths:'6', sqft:5939, url:'https://streeteasy.com/sale/1816595'},
+    {id:'mh6', address:'246 West 132nd Street', area:'Central Harlem, Manhattan', zone:'Manhattan', type:'Three-family', units:3, price:2595000, beds:5, baths:'4+', sqft:4860, url:'https://streeteasy.com/sale/1815753'},
+    {id:'mh7', address:'312 West 103rd Street', area:'Upper West Side, Manhattan', zone:'Manhattan', type:'Three-family', units:3, price:3150000, beds:6, baths:'4+', sqft:4506, url:'https://streeteasy.com/building/312-west-103-street-new_york/na'},
+    {id:'mh8', address:'2070 Fifth Avenue', area:'Central Harlem, Manhattan', zone:'Manhattan', type:'Three-family', units:3, price:2400000, beds:10, baths:'8.5', sqft:5200, url:'https://streeteasy.com/building/2070-5-avenue-new_york/1'},
+    {id:'mh9', address:'115 West 87th Street', area:'Upper West Side, Manhattan', zone:'Manhattan', type:'Four-family', units:4, price:4750000, beds:8, baths:'6.5', sqft:4725, url:'https://streeteasy.com/sale/1814605'},
+    {id:'mh10', address:'27 West 9th Street', area:'Greenwich Village, Manhattan', zone:'Manhattan', type:'Multifamily', units:5, price:6395000, beds:6, baths:'6', sqft:5610, url:'https://streeteasy.com/building/27-west-9-street-new_york/twnhs'},
+    {id:'mh11', address:'127 West 122nd Street', area:'South Harlem, Manhattan', zone:'Manhattan', type:'Two-family', units:2, price:3500000, beds:6, baths:'3', sqft:4504, url:'https://streeteasy.com/building/127-west-122-street-new_york/th'},
+    {id:'mh12', address:"447 West 47th Street", area:"Hell's Kitchen, Manhattan", zone:'Manhattan', type:'Multifamily', units:10, price:6150000, beds:13, baths:'10.5', sqft:7686, url:'https://streeteasy.com/building/447-west-47-street-new_york/multifamily'}
+];
 
-function updateVisibility() {
-    const rows = document.querySelectorAll('#listings-body .listing-row');
-    let visible = 0;
-    rows.forEach(row => {
-        const sub = row.querySelector('.address-sub');
-        const badge = row.querySelector('.type-badge');
-        const mainAddr = row.querySelector('.address-main');
-        const subText = sub ? sub.textContent : '';
-        const badgeText = badge ? badge.textContent : '';
-        const addrText = mainAddr ? mainAddr.textContent : '';
+// ===== Assumptions =====
+const DEFAULT_ASSUMPTIONS = {
+    baseRentPerBed: 1800,
+    vacancyRate: 5,
+    opexRatio: 35,
+    ltv: 75,
+    rate: 7,
+    amortYears: 30
+};
+let assumptions = { ...DEFAULT_ASSUMPTIONS };
 
-        let showArea = true;
-        let showType = true;
-        let showSearch = true;
+// Neighborhood rent multiplier (applied to base rent/bed)
+const NEIGHBORHOOD_MULT = [
+    ['greenwich village', 1.50],
+    ['upper west side', 1.45],
+    ['kips bay', 1.45],
+    ["hell's kitchen", 1.30],
+    ['south harlem', 1.15],
+    ['central harlem', 1.10],
+    ['long island city', 1.20],
+    ['park slope', 1.30],
+    ['carroll gardens', 1.30],
+    ['east williamsburg', 1.15],
+    ['ditmars-steinway', 1.05],
+    ['astoria', 1.00],
+    ['greenwood', 1.00],
+    ['stuyvesant heights', 0.95],
+    ['crown heights', 0.95],
+    ['bushwick', 0.90],
+    ['flatbush', 0.80],
+    ['fort hamilton', 0.85],
+    ['gravesend', 0.75],
+    ['canarsie', 0.70]
+];
 
-        if (currentArea !== 'all') {
-            showArea = subText.includes(currentArea);
+function neighborhoodMult(area) {
+    const key = (area || '').toLowerCase();
+    for (const [k, v] of NEIGHBORHOOD_MULT) {
+        if (key.includes(k)) return v;
+    }
+    return 1.0;
+}
+
+// ===== Calculations =====
+function mortgageFactor(annualRate, years) {
+    if (annualRate <= 0) return 1 / (years * 12);
+    const r = annualRate / 12;
+    const n = years * 12;
+    return (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+}
+
+function computeMetrics(l) {
+    const mult = neighborhoodMult(l.area);
+    const rentPerBed = assumptions.baseRentPerBed * mult;
+    const gpr = l.beds * rentPerBed * 12;
+    const vacancy = gpr * (assumptions.vacancyRate / 100);
+    const egi = gpr - vacancy;
+    const opex = egi * (assumptions.opexRatio / 100);
+    const noi = egi - opex;
+    const capRate = l.price > 0 ? noi / l.price : 0;
+
+    const loanAmt = l.price * (assumptions.ltv / 100);
+    const mf = mortgageFactor(assumptions.rate / 100, assumptions.amortYears);
+    const annualDS = loanAmt * mf * 12;
+    const cashFlow = noi - annualDS;
+    const equity = l.price - loanAmt;
+    const coc = equity > 0 ? cashFlow / equity : 0;
+    const dscr = annualDS > 0 ? noi / annualDS : 0;
+    const ppu = l.price / l.units;
+
+    return { mult, rentPerBed, gpr, vacancy, egi, opex, noi, capRate, loanAmt, annualDS, cashFlow, equity, coc, dscr, ppu };
+}
+
+function investmentScore(l, m) {
+    const cap = m.capRate * 100;
+    let capScore = 0;
+    if (cap >= 8) capScore = 40;
+    else if (cap >= 7) capScore = 34;
+    else if (cap >= 6) capScore = 28;
+    else if (cap >= 5) capScore = 20;
+    else if (cap >= 4) capScore = 12;
+    else if (cap >= 3) capScore = 6;
+
+    const coc = m.coc * 100;
+    let cocScore = 0;
+    if (coc >= 10) cocScore = 20;
+    else if (coc >= 7) cocScore = 16;
+    else if (coc >= 4) cocScore = 11;
+    else if (coc >= 2) cocScore = 6;
+    else if (coc >= 0) cocScore = 2;
+
+    const t = l.type.toLowerCase();
+    let typeScore = 5;
+    if (t.includes('three') || t.includes('four')) typeScore = 20;
+    else if (t.includes('multi')) typeScore = 15;
+
+    const ppu = m.ppu;
+    let ppuScore = 0;
+    if (ppu < 400000) ppuScore = 20;
+    else if (ppu < 600000) ppuScore = 16;
+    else if (ppu < 800000) ppuScore = 12;
+    else if (ppu < 1100000) ppuScore = 7;
+    else if (ppu < 1500000) ppuScore = 3;
+
+    const total = capScore + cocScore + typeScore + ppuScore;
+    return { capScore, cocScore, typeScore, ppuScore, total };
+}
+
+// ===== Formatting =====
+function fmtMoney(n, dec = 0) {
+    if (n == null || isNaN(n)) return '—';
+    const sign = n < 0 ? '-' : '';
+    return sign + '$' + Math.abs(n).toLocaleString('en-US', { maximumFractionDigits: dec, minimumFractionDigits: dec });
+}
+
+function fmtPct(n, dec = 2) {
+    if (n == null || isNaN(n)) return '—';
+    return (n * 100).toFixed(dec) + '%';
+}
+
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+// ===== State =====
+let filters = {
+    area: 'all',
+    type: 'all',
+    search: '',
+    priceMin: null,
+    priceMax: null,
+    unitsMin: null,
+    unitsMax: null,
+    minCapRate: 0,
+    minScore: 0
+};
+let sortKey = 'capRate';
+let sortAsc = false;
+
+function getComputed() {
+    return LISTINGS.map(l => {
+        const metrics = computeMetrics(l);
+        const score = investmentScore(l, metrics);
+        return { listing: l, metrics, score };
+    });
+}
+
+function applyFilters(rows) {
+    return rows.filter(r => {
+        const l = r.listing;
+        if (filters.area !== 'all' && l.zone !== filters.area) return false;
+
+        if (filters.type !== 'all') {
+            if (filters.type === 'preferred') {
+                if (!(l.type.includes('Three') || l.type.includes('Four'))) return false;
+            } else if (!l.type.includes(filters.type)) return false;
         }
 
-        if (currentType !== 'all') {
-            if (currentType === 'preferred') {
-                showType = badgeText.includes('Three') || badgeText.includes('Four');
-            } else {
-                showType = badgeText.includes(currentType);
-            }
+        if (filters.search) {
+            const s = filters.search.toLowerCase();
+            if (!l.address.toLowerCase().includes(s) && !l.area.toLowerCase().includes(s)) return false;
         }
 
-        if (currentSearch) {
-            showSearch = addrText.toLowerCase().includes(currentSearch.toLowerCase()) ||
-                         subText.toLowerCase().includes(currentSearch.toLowerCase());
+        if (filters.priceMin != null && l.price < filters.priceMin) return false;
+        if (filters.priceMax != null && l.price > filters.priceMax) return false;
+        if (filters.unitsMin != null && l.units < filters.unitsMin) return false;
+        if (filters.unitsMax != null && l.units > filters.unitsMax) return false;
+        if (r.metrics.capRate * 100 < filters.minCapRate) return false;
+        if (r.score.total < filters.minScore) return false;
+
+        return true;
+    });
+}
+
+function sortRows(rows) {
+    const sortVal = r => {
+        switch (sortKey) {
+            case 'address': return r.listing.address;
+            case 'price': return r.listing.price;
+            case 'ppu': return r.metrics.ppu;
+            case 'beds': return r.listing.beds;
+            case 'capRate': return r.metrics.capRate;
+            case 'coc': return r.metrics.coc;
+            case 'score': return r.score.total;
+            default: return 0;
         }
-
-        const show = showArea && showType && showSearch;
-        row.classList.toggle('hidden', !show);
-        if (show) visible++;
+    };
+    return [...rows].sort((a, b) => {
+        const va = sortVal(a), vb = sortVal(b);
+        if (typeof va === 'string') return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+        return sortAsc ? va - vb : vb - va;
     });
-    document.getElementById('count-badge').textContent = visible + ' listing' + (visible !== 1 ? 's' : '');
 }
 
-function filterArea(area) {
-    currentArea = area;
-    currentType = 'all';
-    // Reset type buttons
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    // Set active area button
-    const allBtns = document.querySelectorAll('.filter-btn');
-    const areaMap = {'all': 'All', 'Brooklyn': 'Brooklyn', 'Long Island City': 'LIC', 'Astoria': 'Astoria', 'Manhattan': 'Manhattan'};
-    allBtns.forEach(b => {
-        if (b.textContent === (areaMap[area] || area)) b.classList.add('active');
-    });
-    updateVisibility();
-}
-
-function filterType(type) {
-    currentType = type;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    const typeLabelMap = {'Three': '3-Family', 'Four': '4-Family', 'preferred': '3-4 Fam Only'};
-    document.querySelectorAll('.filter-btn').forEach(b => {
-        if (b.textContent === (typeLabelMap[type] || type)) b.classList.add('active');
-    });
-    updateVisibility();
-}
-
-function searchFilter(val) {
-    currentSearch = val;
-    updateVisibility();
-}
-
-function sortByPPU() {
-    ppuSortAsc = !ppuSortAsc;
-    const header = document.getElementById('ppu-header');
-    header.textContent = 'Price/Unit ' + (ppuSortAsc ? '▲' : '▼');
+// ===== Render =====
+function render() {
+    const all = getComputed();
+    const filtered = applyFilters(all);
+    const sorted = sortRows(filtered);
 
     const tbody = document.getElementById('listings-body');
-    const rows = Array.from(tbody.querySelectorAll('.listing-row'));
+    if (sorted.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="10"><div class="empty-state">No listings match these filters. Try relaxing your criteria or click Reset.</div></td></tr>';
+    } else {
+        tbody.innerHTML = sorted.map(({listing, metrics, score}) => {
+            const t = listing.type.toLowerCase();
+            const typeClass = (t.includes('three') || t.includes('four')) ? 'pref' : (t.includes('multi') ? 'multi' : '');
+            const scoreTier = score.total >= 65 ? 'tier-top' : (score.total >= 45 ? 'tier-mid' : 'tier-low');
+            return `
+                <tr class="listing-row" onclick="openDetail('${listing.id}')">
+                    <td>
+                        <div class="address-main">${escapeHtml(listing.address)}</div>
+                        <div class="address-sub">${escapeHtml(listing.area)}</div>
+                    </td>
+                    <td><span class="type-badge ${typeClass}">${escapeHtml(listing.type)}</span></td>
+                    <td class="num">${fmtMoney(listing.price)}</td>
+                    <td class="num num-accent">${fmtMoney(metrics.ppu)}</td>
+                    <td class="num-center">${listing.units}</td>
+                    <td class="num-center">${listing.beds}</td>
+                    <td class="num-center num">${fmtPct(metrics.capRate, 2)}</td>
+                    <td class="num-center num ${metrics.coc < 0 ? 'num' : ''}" style="color:${metrics.coc < 0 ? 'var(--red)' : 'inherit'}">${fmtPct(metrics.coc, 2)}</td>
+                    <td class="num-center"><span class="score-pill ${scoreTier}">${score.total}</span></td>
+                    <td class="num-center"><a href="${escapeHtml(listing.url)}" target="_blank" rel="noopener" class="view-btn" onclick="event.stopPropagation()">View →</a></td>
+                </tr>
+            `;
+        }).join('');
+    }
 
-    rows.sort((a, b) => {
-        const getPPU = row => {
-            const ppu = row.querySelector('.td-ppu');
-            if (!ppu) return 0;
-            return parseInt(ppu.textContent.replace(/[$,]/g, '')) || 0;
-        };
-        return ppuSortAsc ? getPPU(a) - getPPU(b) : getPPU(b) - getPPU(a);
-    });
-
-    rows.forEach(row => tbody.appendChild(row));
+    document.getElementById('count-badge').textContent = sorted.length + ' listing' + (sorted.length !== 1 ? 's' : '');
+    renderStats(filtered);
+    updateSortIndicators();
 }
+
+function renderStats(rows) {
+    const grid = document.getElementById('stats-grid');
+    if (rows.length === 0) {
+        grid.innerHTML = `
+            <div class="stat-card"><div class="stat-card-label">Listings</div><div class="stat-card-value">0</div></div>
+            <div class="stat-card"><div class="stat-card-label">Avg Cap Rate</div><div class="stat-card-value">—</div></div>
+            <div class="stat-card"><div class="stat-card-label">Avg CoC Return</div><div class="stat-card-value">—</div></div>
+            <div class="stat-card"><div class="stat-card-label">Avg Score</div><div class="stat-card-value">—</div></div>
+            <div class="stat-card"><div class="stat-card-label">Top Deal</div><div class="stat-card-value">—</div></div>
+        `;
+        return;
+    }
+
+    const avgCap = rows.reduce((s, r) => s + r.metrics.capRate, 0) / rows.length;
+    const avgCoc = rows.reduce((s, r) => s + r.metrics.coc, 0) / rows.length;
+    const avgScore = rows.reduce((s, r) => s + r.score.total, 0) / rows.length;
+    const top = [...rows].sort((a, b) => b.score.total - a.score.total)[0];
+    const totalUnits = rows.reduce((s, r) => s + r.listing.units, 0);
+    const capColor = avgCap >= 0.06 ? 'var(--green)' : (avgCap >= 0.04 ? 'var(--amber)' : 'var(--red)');
+    const cocColor = avgCoc >= 0.06 ? 'var(--green)' : (avgCoc >= 0.02 ? 'var(--amber)' : 'var(--red)');
+
+    grid.innerHTML = `
+        <div class="stat-card">
+            <div class="stat-card-label">Listings</div>
+            <div class="stat-card-value">${rows.length}</div>
+            <div class="stat-card-sub">${totalUnits} units total</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-label">Avg Cap Rate</div>
+            <div class="stat-card-value" style="color:${capColor}">${fmtPct(avgCap, 2)}</div>
+            <div class="stat-card-sub">At current assumptions</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-label">Avg CoC Return</div>
+            <div class="stat-card-value" style="color:${cocColor}">${fmtPct(avgCoc, 2)}</div>
+            <div class="stat-card-sub">Year 1, after debt</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-label">Avg Score</div>
+            <div class="stat-card-value">${avgScore.toFixed(0)}<span style="font-size:13px;color:var(--text-light);font-weight:600">/100</span></div>
+            <div class="stat-card-sub">Composite rank</div>
+        </div>
+        <div class="stat-card" style="border-left: 4px solid var(--green)">
+            <div class="stat-card-label">Top-scored Deal</div>
+            <div class="stat-card-value" style="font-size:14px;line-height:1.3">${escapeHtml(top.listing.address)}</div>
+            <div class="stat-card-sub">${escapeHtml(top.listing.zone)} · Score ${top.score.total} · Cap ${fmtPct(top.metrics.capRate, 1)}</div>
+        </div>
+    `;
+}
+
+function updateSortIndicators() {
+    document.querySelectorAll('th.sortable').forEach(th => {
+        th.classList.remove('active-sort');
+        th.innerHTML = th.dataset.label;
+    });
+    const th = document.querySelector(`th[data-sort="${sortKey}"]`);
+    if (th) {
+        th.classList.add('active-sort');
+        th.innerHTML = th.dataset.label + ' ' + (sortAsc ? '▲' : '▼');
+    }
+}
+
+// ===== Detail Panel =====
+function openDetail(id) {
+    const l = LISTINGS.find(x => x.id === id);
+    if (!l) return;
+    const m = computeMetrics(l);
+    const s = investmentScore(l, m);
+    const tier = s.total >= 65 ? 'tier-top' : (s.total >= 45 ? 'tier-mid' : 'tier-low');
+    const tierLabel = s.total >= 65 ? 'Strong Fit' : (s.total >= 45 ? 'Worth Review' : 'Below Target');
+
+    document.getElementById('panel-address').textContent = l.address;
+    document.getElementById('panel-sub').textContent = l.area + ' · ' + l.type + ' · ' + l.units + ' units';
+    document.getElementById('panel-link').href = l.url;
+
+    const ppsf = l.sqft ? fmtMoney(l.price / l.sqft) + '/ft²' : '';
+
+    document.getElementById('panel-body').innerHTML = `
+        <div class="panel-section">
+            <div class="panel-section-title">Deal Snapshot</div>
+            <div class="kv-row"><span class="kv-label">Asking Price</span><span class="kv-value">${fmtMoney(l.price)}</span></div>
+            <div class="kv-row"><span class="kv-label">Price / Unit</span><span class="kv-value">${fmtMoney(m.ppu)}</span></div>
+            <div class="kv-row"><span class="kv-label">Beds / Baths</span><span class="kv-value">${l.beds} / ${escapeHtml(l.baths)}</span></div>
+            <div class="kv-row"><span class="kv-label">Size</span><span class="kv-value">${l.sqft ? l.sqft.toLocaleString() + ' ft² · ' + ppsf : '—'}</span></div>
+        </div>
+
+        <div class="panel-section">
+            <div class="panel-section-title">Income Pro Forma (Year 1)</div>
+            <div class="kv-row"><span class="kv-label">Rent / bed / mo <small>(${m.mult.toFixed(2)}× ${escapeHtml(l.zone)} multiplier)</small></span><span class="kv-value">${fmtMoney(m.rentPerBed)}</span></div>
+            <div class="kv-row"><span class="kv-label">Gross Potential Rent</span><span class="kv-value">${fmtMoney(m.gpr)}</span></div>
+            <div class="kv-row deduct"><span class="kv-label">− Vacancy (${assumptions.vacancyRate}%)</span><span class="kv-value">${fmtMoney(m.vacancy)}</span></div>
+            <div class="kv-row"><span class="kv-label">Effective Gross Income</span><span class="kv-value">${fmtMoney(m.egi)}</span></div>
+            <div class="kv-row deduct"><span class="kv-label">− Operating Expenses (${assumptions.opexRatio}%)</span><span class="kv-value">${fmtMoney(m.opex)}</span></div>
+            <div class="kv-row highlight"><span class="kv-label" style="font-weight:700;color:var(--text)">Net Operating Income</span><span class="kv-value big">${fmtMoney(m.noi)}</span></div>
+            <div class="kv-row highlight"><span class="kv-label" style="font-weight:700;color:var(--text)">Cap Rate</span><span class="kv-value big">${fmtPct(m.capRate, 2)}</span></div>
+        </div>
+
+        <div class="panel-section">
+            <div class="panel-section-title">Financing · ${assumptions.ltv}% LTV / ${assumptions.rate}% / ${assumptions.amortYears}yr</div>
+            <div class="kv-row"><span class="kv-label">Loan Amount</span><span class="kv-value">${fmtMoney(m.loanAmt)}</span></div>
+            <div class="kv-row"><span class="kv-label">Equity Required</span><span class="kv-value">${fmtMoney(m.equity)}</span></div>
+            <div class="kv-row deduct"><span class="kv-label">− Annual Debt Service</span><span class="kv-value">${fmtMoney(m.annualDS)}</span></div>
+            <div class="kv-row"><span class="kv-label">Annual Cash Flow</span><span class="kv-value ${m.cashFlow < 0 ? 'negative' : ''}">${fmtMoney(m.cashFlow)}</span></div>
+            <div class="kv-row highlight"><span class="kv-label" style="font-weight:700;color:var(--text)">Cash-on-Cash Return</span><span class="kv-value big ${m.coc < 0 ? 'negative' : ''}">${fmtPct(m.coc, 2)}</span></div>
+            <div class="kv-row"><span class="kv-label">DSCR</span><span class="kv-value ${m.dscr < 1 ? 'negative' : ''}">${m.dscr.toFixed(2)}×</span></div>
+        </div>
+
+        <div class="panel-section">
+            <div class="panel-section-title">Investment Score</div>
+            <div class="score-summary">
+                <div class="score-big ${tier}">${s.total}<small>/100</small></div>
+                <div class="score-label">${tierLabel}</div>
+                <div class="score-breakdown-row"><span class="label">Cap Rate (40 max)</span><span class="val">${s.capScore}</span></div>
+                <div class="score-breakdown-row"><span class="label">Cash-on-Cash (20 max)</span><span class="val">${s.cocScore}</span></div>
+                <div class="score-breakdown-row"><span class="label">Asset Type (20 max)</span><span class="val">${s.typeScore}</span></div>
+                <div class="score-breakdown-row"><span class="label">Price / Unit (20 max)</span><span class="val">${s.ppuScore}</span></div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('modal-overlay').classList.add('visible');
+    document.getElementById('detail-panel').classList.add('visible');
+}
+
+// ===== Settings =====
+function openSettings() {
+    document.getElementById('s-rent').value = assumptions.baseRentPerBed;
+    document.getElementById('s-vac').value = assumptions.vacancyRate;
+    document.getElementById('s-opex').value = assumptions.opexRatio;
+    document.getElementById('s-ltv').value = assumptions.ltv;
+    document.getElementById('s-rate').value = assumptions.rate;
+    document.getElementById('s-amort').value = assumptions.amortYears;
+    document.getElementById('modal-overlay').classList.add('visible');
+    document.getElementById('settings-modal').classList.add('visible');
+}
+
+function saveAssumptions() {
+    assumptions.baseRentPerBed = parseFloat(document.getElementById('s-rent').value) || DEFAULT_ASSUMPTIONS.baseRentPerBed;
+    assumptions.vacancyRate = parseFloat(document.getElementById('s-vac').value);
+    if (isNaN(assumptions.vacancyRate)) assumptions.vacancyRate = 0;
+    assumptions.opexRatio = parseFloat(document.getElementById('s-opex').value);
+    if (isNaN(assumptions.opexRatio)) assumptions.opexRatio = 0;
+    assumptions.ltv = parseFloat(document.getElementById('s-ltv').value);
+    if (isNaN(assumptions.ltv)) assumptions.ltv = 0;
+    assumptions.rate = parseFloat(document.getElementById('s-rate').value);
+    if (isNaN(assumptions.rate)) assumptions.rate = 0;
+    assumptions.amortYears = parseFloat(document.getElementById('s-amort').value) || DEFAULT_ASSUMPTIONS.amortYears;
+    closeAll();
+    render();
+}
+
+function resetAssumptions() {
+    assumptions = { ...DEFAULT_ASSUMPTIONS };
+    document.getElementById('s-rent').value = assumptions.baseRentPerBed;
+    document.getElementById('s-vac').value = assumptions.vacancyRate;
+    document.getElementById('s-opex').value = assumptions.opexRatio;
+    document.getElementById('s-ltv').value = assumptions.ltv;
+    document.getElementById('s-rate').value = assumptions.rate;
+    document.getElementById('s-amort').value = assumptions.amortYears;
+}
+
+function closeAll() {
+    document.getElementById('modal-overlay').classList.remove('visible');
+    document.getElementById('detail-panel').classList.remove('visible');
+    document.getElementById('settings-modal').classList.remove('visible');
+}
+
+// ===== Filter handlers =====
+function setArea(area) {
+    filters.area = area;
+    document.querySelectorAll('.filter-btn[data-area]').forEach(b => b.classList.toggle('active', b.dataset.area === area));
+    render();
+}
+
+function setType(type) {
+    filters.type = filters.type === type ? 'all' : type;
+    document.querySelectorAll('.filter-btn[data-type]').forEach(b => b.classList.toggle('active', b.dataset.type === filters.type));
+    render();
+}
+
+function setSearch(v) {
+    filters.search = v;
+    render();
+}
+
+function updateFilters() {
+    const pmin = document.getElementById('price-min').value;
+    const pmax = document.getElementById('price-max').value;
+    const umin = document.getElementById('units-min').value;
+    const umax = document.getElementById('units-max').value;
+    filters.priceMin = pmin ? parseFloat(pmin) : null;
+    filters.priceMax = pmax ? parseFloat(pmax) : null;
+    filters.unitsMin = umin ? parseFloat(umin) : null;
+    filters.unitsMax = umax ? parseFloat(umax) : null;
+    render();
+}
+
+function onCapRateChange(v) {
+    filters.minCapRate = parseFloat(v);
+    document.getElementById('caprate-display').textContent = '≥ ' + parseFloat(v).toFixed(2) + '%';
+    render();
+}
+
+function onScoreChange(v) {
+    filters.minScore = parseInt(v);
+    document.getElementById('score-display').textContent = '≥ ' + v;
+    render();
+}
+
+function resetFilters() {
+    filters = { area: 'all', type: 'all', search: '', priceMin: null, priceMax: null, unitsMin: null, unitsMax: null, minCapRate: 0, minScore: 0 };
+    document.querySelectorAll('.filter-btn[data-area]').forEach(b => b.classList.toggle('active', b.dataset.area === 'all'));
+    document.querySelectorAll('.filter-btn[data-type]').forEach(b => b.classList.remove('active'));
+    document.getElementById('search-box').value = '';
+    document.getElementById('price-min').value = '';
+    document.getElementById('price-max').value = '';
+    document.getElementById('units-min').value = '';
+    document.getElementById('units-max').value = '';
+    document.getElementById('caprate-slider').value = 0;
+    document.getElementById('caprate-display').textContent = '≥ 0%';
+    document.getElementById('score-slider').value = 0;
+    document.getElementById('score-display').textContent = '≥ 0';
+    render();
+}
+
+function sortBy(key) {
+    if (sortKey === key) sortAsc = !sortAsc;
+    else { sortKey = key; sortAsc = (key === 'address'); }
+    render();
+}
+
+// ===== Export =====
+function exportCSV() {
+    const rows = sortRows(applyFilters(getComputed()));
+    const headers = ['Address', 'Neighborhood', 'Type', 'Units', 'Price', 'Price/Unit', 'Beds', 'Baths', 'SqFt',
+                     'Est Rent/Bed', 'GPR', 'NOI', 'Cap Rate', 'Annual DS', 'Cash Flow', 'CoC', 'DSCR',
+                     'Score', 'URL'];
+    const body = rows.map(({listing, metrics, score}) => [
+        listing.address, listing.area, listing.type, listing.units, listing.price,
+        Math.round(metrics.ppu), listing.beds, listing.baths, listing.sqft ?? '',
+        Math.round(metrics.rentPerBed), Math.round(metrics.gpr), Math.round(metrics.noi),
+        (metrics.capRate * 100).toFixed(2) + '%',
+        Math.round(metrics.annualDS), Math.round(metrics.cashFlow),
+        (metrics.coc * 100).toFixed(2) + '%',
+        metrics.dscr.toFixed(2), score.total, listing.url
+    ]);
+    const csv = [headers, ...body].map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'nyc-multifamily-deals-' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// ===== Init =====
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeAll(); });
+render();
 </script>
 
 </body>

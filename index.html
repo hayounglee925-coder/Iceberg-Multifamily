@@ -131,6 +131,38 @@ td { padding: 11px 12px; font-size: 13px; border-bottom: 1px solid #F3F4F6; vert
 .score-breakdown-row .label { color: var(--text-light); }
 .score-breakdown-row .val { font-weight: 700; font-family: 'SF Mono', Monaco, Consolas, monospace; }
 
+/* Sensitivity matrix */
+.sens-wrap { overflow-x: auto; margin-top: 6px; }
+.sens-table { width: 100%; border-collapse: collapse; font-family: 'SF Mono', Monaco, Consolas, monospace; font-size: 11px; }
+.sens-table th, .sens-table td { padding: 6px 4px; text-align: center; border: 1px solid #E5E7EB; white-space: nowrap; }
+.sens-table thead th { background: #F3F4F6; font-weight: 700; color: var(--text-light); font-size: 10px; letter-spacing: 0.3px; }
+.sens-table tbody th { background: #F3F4F6; font-weight: 700; color: var(--text-light); font-size: 10px; }
+.sens-corner { font-size: 9px !important; color: var(--text-light); line-height: 1.2; }
+.sens-good { background: #A7F3D0; color: #065F46; font-weight: 700; }
+.sens-mid { background: #FDE68A; color: #78350F; font-weight: 700; }
+.sens-marginal { background: #FED7AA; color: #7C2D12; font-weight: 700; }
+.sens-bad { background: #FCA5A5; color: #7F1D1D; font-weight: 700; }
+.sens-base { outline: 2px solid var(--primary); outline-offset: -2px; position: relative; }
+.sens-legend { display: flex; gap: 10px; margin-top: 8px; font-size: 10px; color: var(--text-light); flex-wrap: wrap; }
+.sens-legend-item { display: flex; align-items: center; gap: 4px; }
+.sens-legend-dot { width: 10px; height: 10px; border-radius: 2px; }
+.sens-caption { font-size: 11px; color: var(--text-light); margin-top: 4px; font-style: italic; }
+
+.breakeven-card { background: linear-gradient(135deg, #F0F7FF 0%, #FFFFFF 100%); border: 1px solid #DBEAFE; border-radius: 10px; padding: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px; }
+.be-box { text-align: center; }
+.be-box .be-label { font-size: 10px; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; margin-bottom: 3px; }
+.be-box .be-val { font-size: 17px; font-weight: 800; font-family: 'SF Mono', Monaco, Consolas, monospace; }
+.be-box .be-sub { font-size: 10px; color: var(--text-light); margin-top: 2px; }
+.be-margin.positive { color: var(--green); }
+.be-margin.negative { color: var(--red); }
+
+.submkt-card { background: #FAFBFC; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-top: 6px; }
+.submkt-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; font-size: 12px; }
+.submkt-row .lab { color: var(--text-light); }
+.submkt-row .vl { font-weight: 700; font-family: 'SF Mono', Monaco, Consolas, monospace; }
+.submkt-delta.up { color: var(--green); }
+.submkt-delta.down { color: var(--red); }
+
 /* Settings modal */
 .settings-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 520px; max-width: 95vw; max-height: 90vh; background: white; border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); z-index: 102; overflow: hidden; display: none; flex-direction: column; }
 .settings-modal.visible { display: flex; }
@@ -483,6 +515,63 @@ function investmentScore(l, m) {
     return { capScore, cocScore, typeScore, ppuScore, total };
 }
 
+// ===== Sensitivity & Break-even =====
+function breakEvenRentPerBed(l) {
+    const loanAmt = l.price * (assumptions.ltv / 100);
+    const mf = mortgageFactor(assumptions.rate / 100, assumptions.amortYears);
+    const annualDS = loanAmt * mf * 12;
+    const denom = l.beds * 12 * (1 - assumptions.vacancyRate / 100) * (1 - assumptions.opexRatio / 100);
+    return denom > 0 ? annualDS / denom : 0;
+}
+
+function computeMetricsWith(l, rentMultiplier, rateOverride) {
+    const neigh = neighborhoodMult(l.area);
+    const rentPerBed = assumptions.baseRentPerBed * neigh * rentMultiplier;
+    const gpr = l.beds * rentPerBed * 12;
+    const egi = gpr * (1 - assumptions.vacancyRate / 100);
+    const noi = egi * (1 - assumptions.opexRatio / 100);
+    const capRate = l.price > 0 ? noi / l.price : 0;
+    const loanAmt = l.price * (assumptions.ltv / 100);
+    const rateUsed = Math.max(0.001, rateOverride);
+    const mf = mortgageFactor(rateUsed / 100, assumptions.amortYears);
+    const annualDS = loanAmt * mf * 12;
+    const equity = l.price - loanAmt;
+    const coc = equity > 0 ? (noi - annualDS) / equity : 0;
+    const dscr = annualDS > 0 ? noi / annualDS : 0;
+    return { capRate, coc, dscr, noi };
+}
+
+function sensitivityMatrix(l) {
+    const rentDeltas = [-20, -10, 0, 10, 20];
+    const rateDeltas = [-1, -0.5, 0, 0.5, 1];
+    const cells = rentDeltas.map(rd =>
+        rateDeltas.map(td => {
+            const m = computeMetricsWith(l, (100 + rd) / 100, assumptions.rate + td);
+            return { coc: m.coc, rd, td };
+        })
+    );
+    return { rentDeltas, rateDeltas, cells };
+}
+
+function submarketStats(l) {
+    const sameZone = LISTINGS.filter(x => x.zone === l.zone && x.id !== l.id);
+    if (sameZone.length === 0) return null;
+    const metricsArr = sameZone.map(x => computeMetrics(x));
+    const avgCap = metricsArr.reduce((s, m) => s + m.capRate, 0) / metricsArr.length;
+    const avgPpu = metricsArr.reduce((s, m) => s + m.ppu, 0) / metricsArr.length;
+    const avgCoc = metricsArr.reduce((s, m) => s + m.coc, 0) / metricsArr.length;
+    return { count: sameZone.length, avgCap, avgPpu, avgCoc };
+}
+
+function dealRank(l) {
+    const ranked = LISTINGS.map(x => {
+        const m = computeMetrics(x);
+        return { id: x.id, score: investmentScore(x, m).total };
+    }).sort((a, b) => b.score - a.score);
+    const idx = ranked.findIndex(x => x.id === l.id);
+    return { rank: idx + 1, total: ranked.length };
+}
+
 // ===== Formatting =====
 function fmtMoney(n, dec = 0) {
     if (n == null || isNaN(n)) return '—';
@@ -679,6 +768,12 @@ function openDetail(id) {
     const s = investmentScore(l, m);
     const tier = s.total >= 65 ? 'tier-top' : (s.total >= 45 ? 'tier-mid' : 'tier-low');
     const tierLabel = s.total >= 65 ? 'Strong Fit' : (s.total >= 45 ? 'Worth Review' : 'Below Target');
+    const beRent = breakEvenRentPerBed(l);
+    const beMargin = m.rentPerBed - beRent;
+    const beMarginPct = beRent > 0 ? ((m.rentPerBed - beRent) / beRent) * 100 : 0;
+    const sens = sensitivityMatrix(l);
+    const submkt = submarketStats(l);
+    const rank = dealRank(l);
 
     document.getElementById('panel-address').textContent = l.address;
     document.getElementById('panel-sub').textContent = l.area + ' · ' + l.type + ' · ' + l.units + ' units';
@@ -717,10 +812,93 @@ function openDetail(id) {
         </div>
 
         <div class="panel-section">
+            <div class="panel-section-title">Break-Even Analysis</div>
+            <div class="breakeven-card">
+                <div class="be-box">
+                    <div class="be-label">Current Rent / Bed</div>
+                    <div class="be-val">${fmtMoney(m.rentPerBed)}</div>
+                    <div class="be-sub">Assumed, monthly</div>
+                </div>
+                <div class="be-box">
+                    <div class="be-label">Break-Even Rent / Bed</div>
+                    <div class="be-val">${fmtMoney(beRent)}</div>
+                    <div class="be-sub be-margin ${beMargin >= 0 ? 'positive' : 'negative'}">${beMargin >= 0 ? '+' : ''}${beMarginPct.toFixed(0)}% cushion</div>
+                </div>
+            </div>
+            <div class="sens-caption">Break-even = rent at which DSCR = 1.0 (NOI exactly covers debt service).</div>
+        </div>
+
+        <div class="panel-section">
+            <div class="panel-section-title">Stress Test — Cash-on-Cash Return</div>
+            <div class="sens-wrap">
+                <table class="sens-table">
+                    <thead>
+                        <tr>
+                            <th class="sens-corner">Rent ↓<br>Rate →</th>
+                            ${sens.rateDeltas.map(td => {
+                                const absRate = (assumptions.rate + td).toFixed(2).replace(/\.?0+$/, '');
+                                return `<th>${absRate}%</th>`;
+                            }).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${sens.rentDeltas.map((rd, i) => {
+                            const rentLabel = rd === 0 ? 'Base' : `${rd > 0 ? '+' : ''}${rd}%`;
+                            return `
+                                <tr>
+                                    <th>${rentLabel}</th>
+                                    ${sens.cells[i].map(cell => {
+                                        let tier = 'sens-bad';
+                                        if (cell.coc >= 0.06) tier = 'sens-good';
+                                        else if (cell.coc >= 0.02) tier = 'sens-mid';
+                                        else if (cell.coc >= 0) tier = 'sens-marginal';
+                                        const isBase = (cell.rd === 0 && cell.td === 0);
+                                        return `<td class="${tier}${isBase ? ' sens-base' : ''}">${(cell.coc * 100).toFixed(1)}%</td>`;
+                                    }).join('')}
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div class="sens-legend">
+                <div class="sens-legend-item"><span class="sens-legend-dot" style="background:#A7F3D0"></span>≥ 6%</div>
+                <div class="sens-legend-item"><span class="sens-legend-dot" style="background:#FDE68A"></span>2-6%</div>
+                <div class="sens-legend-item"><span class="sens-legend-dot" style="background:#FED7AA"></span>0-2%</div>
+                <div class="sens-legend-item"><span class="sens-legend-dot" style="background:#FCA5A5"></span>negative</div>
+                <div class="sens-legend-item" style="margin-left:auto"><span style="border:2px solid var(--primary);width:10px;height:10px;display:inline-block;margin-right:4px;"></span>base case</div>
+            </div>
+        </div>
+
+        ${submkt ? `
+        <div class="panel-section">
+            <div class="panel-section-title">${escapeHtml(l.zone)} Submarket Context</div>
+            <div class="submkt-card">
+                <div class="submkt-row">
+                    <span class="lab">Cap Rate · This deal vs submkt avg</span>
+                    <span class="vl">${fmtPct(m.capRate, 2)} <span class="submkt-delta ${m.capRate >= submkt.avgCap ? 'up' : 'down'}">(${m.capRate >= submkt.avgCap ? '+' : ''}${((m.capRate - submkt.avgCap) * 100).toFixed(2)}pp)</span></span>
+                </div>
+                <div class="submkt-row">
+                    <span class="lab">Price / Unit · This deal vs submkt avg</span>
+                    <span class="vl">${fmtMoney(m.ppu)} <span class="submkt-delta ${m.ppu <= submkt.avgPpu ? 'up' : 'down'}">(${m.ppu <= submkt.avgPpu ? '−' : '+'}${fmtMoney(Math.abs(m.ppu - submkt.avgPpu))})</span></span>
+                </div>
+                <div class="submkt-row">
+                    <span class="lab">Cash-on-Cash · This deal vs submkt avg</span>
+                    <span class="vl">${fmtPct(m.coc, 2)} <span class="submkt-delta ${m.coc >= submkt.avgCoc ? 'up' : 'down'}">(${m.coc >= submkt.avgCoc ? '+' : ''}${((m.coc - submkt.avgCoc) * 100).toFixed(2)}pp)</span></span>
+                </div>
+                <div class="submkt-row" style="border-top:1px solid var(--border);padding-top:8px;margin-top:4px">
+                    <span class="lab">Compared against</span>
+                    <span class="vl" style="font-family:inherit;font-weight:600;color:var(--text-light);font-size:11px">${submkt.count} other ${escapeHtml(l.zone)} listings</span>
+                </div>
+            </div>
+        </div>
+        ` : ''}
+
+        <div class="panel-section">
             <div class="panel-section-title">Investment Score</div>
             <div class="score-summary">
                 <div class="score-big ${tier}">${s.total}<small>/100</small></div>
-                <div class="score-label">${tierLabel}</div>
+                <div class="score-label">${tierLabel} · Ranked #${rank.rank} of ${rank.total}</div>
                 <div class="score-breakdown-row"><span class="label">Cap Rate (40 max)</span><span class="val">${s.capScore}</span></div>
                 <div class="score-breakdown-row"><span class="label">Cash-on-Cash (20 max)</span><span class="val">${s.cocScore}</span></div>
                 <div class="score-breakdown-row"><span class="label">Asset Type (20 max)</span><span class="val">${s.typeScore}</span></div>
